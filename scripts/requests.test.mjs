@@ -38,18 +38,20 @@ test('network failures do not produce a save acknowledgement',async()=>{
 const source=await fs.readFile(new URL('../backend/Code.template.gs',import.meta.url),'utf8');
 function server(offer){
   const records=[['Submitted at','Request ID','Name','Phone','Email','State','Contact preference','Contact consent','Status','Team notes']];
+  let clock=Date.now();class Clock extends Date{constructor(...args){super(...(args.length?args:[clock]));}static now(){return clock;}}
   let flushed=0;const properties=new Map([['SPREADSHEET_ID','test-sheet']]);const cache=new Map();
   if(offer)properties.set('ROVE6_OFFER_JSON',JSON.stringify(offer));
   const sheet={
     getLastRow:()=>records.length,
     getRange:(row,col,rows=1,cols=1)=>({
       getValues:()=>records.slice(row-1,row-1+rows).map(r=>r.slice(col-1,col-1+cols)),
+      getValue:()=>records[row-1]?.[col-1],
       setNumberFormat:()=>{},
       setValues:(rs)=>{for(let i=0;i<rs.length;i++)records[row-1+i]=rs[i];},
-      createTextFinder:(v)=>({matchEntireCell:()=>({findNext:()=>records.slice(1).find(r=>r[1]===v)||null})})
+      createTextFinder:(v)=>({matchEntireCell:()=>({findNext:()=>{const i=records.findIndex((r,n)=>n>0&&r[1]===v);return i<0?null:{getRow:()=>i+1};}})})
     })
   };
-  const context={Date,JSON,Error,String,Array,console,
+  const context={Date:Clock,JSON,Error,String,Array,console,
     LockService:{getScriptLock:()=>({tryLock:()=>true,releaseLock:()=>{}})},
     PropertiesService:{getScriptProperties:()=>({getProperty:k=>properties.get(k),setProperty:(k,v)=>properties.set(k,v)})},
     SpreadsheetApp:{openById:id=>{assert.equal(id,'test-sheet');return{getSheetByName:()=>sheet};},flush:()=>{flushed++;}},
@@ -59,7 +61,7 @@ function server(offer){
   };
   vm.createContext(context);vm.runInContext(source,context);
   const post=p=>JSON.parse(context.doPost({postData:{contents:JSON.stringify(p)}}));
-  return{post,records,context,get flushed(){return flushed;}};
+  return{post,records,context,advance:ms=>{clock+=ms;},setOffer:value=>properties.set('ROVE6_OFFER_JSON',JSON.stringify(value)),get flushed(){return flushed;}};
 }
 test('receiver persists once and acknowledges repeated request IDs without duplicate leads',()=>{
   const s=server();const p=makePayload(values,requestId,Date.now()-5000);
@@ -103,4 +105,31 @@ test('receiver records the Florida variation and explicit contact channels with 
   assert.equal(s.post(p).ok,true);
   assert.equal(s.records[1][6],'Call, text, email');
   assert.equal(s.records[1][9],'Page: florida | Market: florida');
+});
+
+test('private comparison price is accepted only above the sale price',()=>{
+  assert.equal(validateOffer({...sampleOffer,regularAmountMinor:20000}).regularAmountMinor,20000);
+  assert.equal(validateOffer({...sampleOffer,regularAmountMinor:1}).regularAmountMinor,undefined);
+});
+test('a 24-hour quote keeps its deadline and price across resume and configuration changes',()=>{
+  const s=server({...sampleOffer,regularAmountMinor:20000});
+  const first=s.post(makePayload(values,requestId,Date.now()-5000));
+  assert.equal(first.expiresAt-first.serverNow,86400000);
+  s.advance(3600000);s.setOffer({...sampleOffer,amountMinor:15000});
+  const resumed=s.post({action:'resume',requestId});
+  assert.equal(resumed.expiresAt,first.expiresAt);assert.equal(resumed.offer.amountMinor,sampleOffer.amountMinor);
+  assert.equal(resumed.offer.regularAmountMinor,20000);assert.equal(resumed.expired,false);
+  assert.equal(s.records.length,2);
+  s.advance(82800001);
+  const expired=s.post({action:'resume',requestId});
+  assert.equal(expired.expired,true);assert.equal(expired.offer,null);
+  assert.equal(expired.expiresAt,first.expiresAt);
+});
+test('unknown quote identifiers cannot resume a private offer',()=>{
+  const s=server(sampleOffer);
+  assert.equal(s.post({action:'resume',requestId}).ok,false);
+});
+test('coverage answers are excluded from the contact payload',()=>{
+  const p=makePayload({...values,medicareCoverage:'yes'},requestId,Date.now()-5000);
+  assert.equal(p.medicareCoverage,undefined);assert.equal(JSON.stringify(p).includes('medicareCoverage'),false);
 });

@@ -20,7 +20,9 @@ export function validateOffer(offer) {
   try {
     const url = new URL(offer.checkoutUrl);
     if (url.protocol !== 'https:' || url.hostname !== 'payments-na1.hubspot.com' || url.username || url.password || url.port || !/^\/payments\/[A-Za-z0-9_-]+$/.test(url.pathname)) return null;
-    return { amountMinor: offer.amountMinor, currency: offer.currency, title: offer.title.trim(), checkoutUrl: url.href };
+    const result={ amountMinor: offer.amountMinor, currency: offer.currency, title: offer.title.trim(), checkoutUrl: url.href };
+    if(Number.isSafeInteger(offer.regularAmountMinor)&&offer.regularAmountMinor>offer.amountMinor&&offer.regularAmountMinor<=10000000)result.regularAmountMinor=offer.regularAmountMinor;
+    return result;
   } catch { return null; }
 }
 export async function submitRequest(payload, endpoint, fetcher = fetch) {
@@ -39,3 +41,5 @@ export async function submitRequest(payload, endpoint, fetcher = fetch) {
     throw err;
   } finally { clearTimeout(timer); }
 }
+
+export function resumeOffer(requestId,endpoint,fetcher=fetch){return submitRequest({action:'resume',requestId},endpoint,fetcher);}

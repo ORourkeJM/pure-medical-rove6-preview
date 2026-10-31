@@ -1,6 +1,6 @@
 # Pure Medical Rove 6 landing page
 
-A static, accessible landing page for a prescription portable oxygen concentrator. The primary action is a Rove 6 contact request. After the server confirms it was saved, the connected page displays a private offer with secure HubSpot checkout and a phone option. No payment details or prescription are collected by this page.
+A static, accessible landing page for a prescription portable oxygen concentrator. The flow starts with a Medicare home-oxygen coverage question, followed by the Rove 6 contact request. The coverage answer stays in the browser and does not affect the offer or get sent to the lead system. After the server confirms it was saved, the connected page displays a private offer with secure HubSpot checkout and a phone option. No payment details or prescription are collected by this page.
 
 ## Preview
 
@@ -33,7 +33,7 @@ The connected Google Drive account owns the callback sheet. It is private. Its I
 2. Paste `backend/Code.template.gs` into `Code.gs`.
 3. Run `configureReceiver` once. Google will ask the owner to authorize spreadsheet access.
 4. Choose **Deploy → New deployment → Web app**. Execute as the owner; access must allow **Anyone** so visitors do not have to sign in to Google. Keep the spreadsheet itself private.
-5. In **Project Settings → Script Properties**, set `ROVE6_OFFER_JSON` to a JSON object with `amountMinor` (integer cents), `currency` (`USD`), `title`, and `checkoutUrl` (an HTTPS `payments-na1.hubspot.com/payments/…` URL). Use the reusable link copied from HubSpot Payment Links, never a `/payments/purchase/` checkout session. Keep the current approved amount and payment link in this private setting. They must never be committed to this repository. The server returns this object only with a saved-request acknowledgement, including an idempotent retry. If the setting is missing or invalid, the request is still saved and the page offers a call instead of checkout.
+5. In **Project Settings → Script Properties**, set `ROVE6_OFFER_JSON` to a JSON object with `amountMinor` (integer cents), `currency` (`USD`), `title`, `checkoutUrl`, and an optional verified `regularAmountMinor` for the savings comparison (an HTTPS `payments-na1.hubspot.com/payments/…` URL). Use the reusable link copied from HubSpot Payment Links, never a `/payments/purchase/` checkout session. Keep the current approved amount and payment link in this private setting. They must never be committed to this repository. The server returns this object only with a saved-request acknowledgement, including an idempotent retry. If the setting is missing or invalid, the request is still saved and the page offers a call instead of checkout.
 6. Copy the resulting `/exec` deployment URL. A `/dev` test URL will not work for anonymous visitors.
 7. On the production host, build with the endpoint:
 
@@ -44,6 +44,14 @@ ROVE6_REQUEST_ENDPOINT='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/ex
 8. Test a clearly marked sample request from the production origin. Verify the row is saved in **Requests**, the browser receives a readable acknowledgement, retrying the same request does not duplicate it, and a deliberately failed submission does not show success. Delete only the sample row after reviewing it. If your Workspace administrator disallows anonymous Apps Script web apps, use a server endpoint on your production host instead.
 
 The receiver validates on the server, checks callback consent, rejects its honeypot and premature submissions, uses a write lock, deduplicates request IDs, and escapes spreadsheet formula prefixes. Add a managed CAPTCHA or stronger abuse protection before high-volume public advertising if needed. Do not store prescriptions, diagnoses, payment information, or insurance identifiers here.
+
+## Personal 24-hour price hold
+
+After a successful save, the receiver stores a quote snapshot in private Script Properties, including its sale amount, verified comparison amount, checkout URL, issue time and fixed expiry 24 hours later. A retry or resume returns the original snapshot and expiry. Expired quotes return no amount or checkout URL. The page hides checkout and offers a call after expiry.
+
+The browser stores only the random request UUID to resume that saved quote after refresh. No coverage answer or contact details are stored for this purpose. Resume uses a POST body `{action:"resume", requestId}` and does not create a lead or fire another conversion event. GET remains an amount-free health check.
+
+This is a personal quote-validity window, not a rolling claim that the entire sale ends tomorrow. HubSpot manages the reusable payment link independently; coordinate its availability and checkout terms with the client if strict transaction-level expiration is required. Retire private quote snapshots under an agreed retention policy or move them to a client-owned quote store before scaling beyond the Apps Script property limits.
 
 ## Production and search
 
@@ -56,6 +64,10 @@ The intended canonical page is the client's existing `https://puremedco.com/prod
 - The price gate keeps offer amounts and checkout links out of public HTML, JavaScript, metadata, and GET responses. It is a contact gate, not identity verification: anyone who submits valid contact details and contact consent can receive the offer. Checkout URLs and prices can also be shared by recipients.
 - No analytics are loaded. A `rove6:request-saved` browser event fires only after a confirmed save, with no contact details. Add client-owned analytics only after agreeing on consent and measurement requirements; do not send health or contact data to ad tags.
 - The third-party design team should obtain client approval for imagery, consent/privacy wording, phone routing, current product terms, and the production domain before live traffic. An image or contact notice is not a medical recommendation.
+
+## Florida logo
+
+The Florida header uses the approved coral mountain mark with sea-glass teal lettering in `assets/logo-florida-coral-teal.png`. The national header retains its original blue logo. The logo was recolored with the built-in image editor from the existing mark.
 
 ## Florida imagery and colors
 

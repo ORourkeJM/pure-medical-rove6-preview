@@ -16,6 +16,7 @@ function doPost(e) {
   try {
     if (!e || !e.postData || e.postData.contents.length > 4096) throw new Error('Unable to process this request.');
     const raw = JSON.parse(e.postData.contents);
+    if (raw && raw.action==='resume') return resumeQuote_(raw.requestId);
     const item = validate_(raw);
     const lock = LockService.getScriptLock();
     if (!lock.tryLock(15000)) throw new Error('The form is busy. Please try again.');
@@ -30,19 +31,20 @@ function doPost(e) {
       // An acknowledged request or a retry after an ambiguous network result is written once.
       if (last > 1) {
         const match = sheet.getRange(2,2,last-1,1).createTextFinder(item.requestId).matchEntireCell(true).findNext();
-        if (match) return acknowledgement_(item.requestId);
+        if (match) return acknowledgement_(item.requestId,sheet.getRange(match.getRow(),1).getValue());
       }
       const key = 'phone:' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,item.phone));
       const cache = CacheService.getScriptCache();
       if (cache.get(key)) throw new Error('A request was just sent for this phone number. Please wait a minute before trying again.');
       const next = sheet.getLastRow()+1;
-      const row = [new Date(), item.requestId, safeText_(item.name), safeText_(item.phone), safeText_(item.email), item.state, 'Call, text, email', CONTACT_CONSENT, 'New', 'Page: '+item.variant+' | Market: '+item.market];
+      const issuedAt = new Date();
+      const row = [issuedAt, item.requestId, safeText_(item.name), safeText_(item.phone), safeText_(item.email), item.state, 'Call, text, email', CONTACT_CONSENT, 'New', 'Page: '+item.variant+' | Market: '+item.market];
       sheet.getRange(next,2,1,9).setNumberFormat('@');
       sheet.getRange(next,1,1,10).setValues([row]);
       sheet.getRange(next,1).setNumberFormat('mmm d, yyyy h:mm AM/PM');
       SpreadsheetApp.flush();
       cache.put(key,'1',60);
-      return acknowledgement_(item.requestId);
+      return acknowledgement_(item.requestId,issuedAt);
     } finally { lock.releaseLock(); }
   } catch (error) {
     // Return only a controlled message, not a Google exception, sheet ID, or submitted data.
@@ -72,17 +74,41 @@ function validate_(raw) {
 function safeText_(value) { return /^[\s]*[=+\-@]/.test(value) ? "'"+value : value; }
 function json_(value) { return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON); }
 
-function acknowledgement_(requestId) {
-  // Configure ROVE6_OFFER_JSON privately in Script Properties. Never put offer amounts
-  // or payment links in this public template, frontend code, GET responses, or logs.
-  let offer = null;
+function readConfiguredOffer_() {
   try {
     const value = JSON.parse(PropertiesService.getScriptProperties().getProperty('ROVE6_OFFER_JSON') || 'null');
     if (value && value.currency === 'USD' && Number.isSafeInteger(value.amountMinor) && value.amountMinor > 0 && value.amountMinor <= 10000000 && typeof value.title === 'string' && value.title.trim() && value.title.length <= 120 && /^https:\/\/payments-na1\.hubspot\.com\/payments\/[A-Za-z0-9_-]+(?:\?[^#\s]*)?$/.test(value.checkoutUrl)) {
-      offer = {amountMinor:value.amountMinor,currency:'USD',title:value.title.trim(),checkoutUrl:value.checkoutUrl};
+      const offer = {amountMinor:value.amountMinor,currency:'USD',title:value.title.trim(),checkoutUrl:value.checkoutUrl};
+      if (Number.isSafeInteger(value.regularAmountMinor) && value.regularAmountMinor>value.amountMinor && value.regularAmountMinor<=10000000) offer.regularAmountMinor=value.regularAmountMinor;
+      return offer;
     }
-  } catch (_) { /* The saved request remains valid; the team can provide the quote. */ }
-  return json_({ok:true,requestId:requestId,offer:offer});
+  } catch (_) {}
+  return null;
+}
+function acknowledgement_(requestId,issuedAt) {
+  const properties=PropertiesService.getScriptProperties();
+  const key='ROVE6_QUOTE_'+requestId;
+  let quote=null;
+  try { quote=JSON.parse(properties.getProperty(key)||'null'); } catch (_) {}
+  if (!quote) {
+    const time=new Date(issuedAt).getTime();
+    if (!Number.isFinite(time)) throw new Error('Unable to process this request.');
+    quote={issuedAt:time,expiresAt:time+86400000,offer:readConfiguredOffer_()};
+    properties.setProperty(key,JSON.stringify(quote));
+  }
+  return quoteResponse_(requestId,quote);
+}
+function quoteResponse_(requestId,quote) {
+  const now=Date.now();
+  const expired=!Number.isFinite(quote.expiresAt)||now>=quote.expiresAt;
+  return json_({ok:true,requestId:requestId,serverNow:now,expiresAt:quote.expiresAt,expired:expired,offer:expired?null:quote.offer});
+}
+function resumeQuote_(requestId) {
+  if (typeof requestId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) throw new Error('Unable to process this request.');
+  let quote=null;
+  try { quote=JSON.parse(PropertiesService.getScriptProperties().getProperty('ROVE6_QUOTE_'+requestId)||'null'); } catch (_) {}
+  if (!quote) throw new Error('Unable to process this request.');
+  return quoteResponse_(requestId,quote);
 }
 
 function configureReceiver() {

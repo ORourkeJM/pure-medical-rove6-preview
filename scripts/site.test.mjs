@@ -8,6 +8,9 @@ test('client review uses the completed offer screen without simulated confirmati
   assert.ok(app.includes('await submitRequest(payload,config.requestEndpoint)'));
   assert.ok(html.includes('Your Rove 6 offer is ready.'));
   assert.ok(html.includes('Secure payment through HubSpot'));
+  assert.ok(html.includes('Are you on Medicare and currently using oxygen?'));
+  assert.ok(html.includes('Your end-of-season price'));
+  assert.ok(html.includes('id="offer-timer" hidden'));
 });
 test('contains crawlable product content and a gated offer layout without price or checkout URL',()=>{
   assert.equal((html.match(/<h1\b/g)||[]).length,1);
