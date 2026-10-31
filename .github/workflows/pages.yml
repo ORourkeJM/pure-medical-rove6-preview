@@ -23,6 +23,8 @@ jobs:
           node-version: '22'
       - run: npm test
       - run: npm run build
+        env:
+          ROVE6_REQUEST_ENDPOINT: ${{ vars.ROVE6_REQUEST_ENDPOINT }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -4,11 +4,13 @@ A static, accessible landing page for a prescription portable oxygen concentrato
 
 ## Preview
 
-GitHub Pages publishes a design preview with `noindex`. Its request form validates locally and previews the gated-offer layout with a placeholder instead of an amount. It reports that nothing was sent; checkout is disabled in this preview. It does not collect leads or put contact data into GitHub. Keep paid traffic pointed away from this preview.
+GitHub Pages publishes a fully connected client-review build with `noindex`. The form saves contact requests to the authorized private Google Sheet, then displays the real server-supplied offer and a working reusable HubSpot checkout link. It uses the same customer-facing flow as the production build, without test copy or placeholder pricing. Keep paid traffic pointed at the client's production host.
+
+The receiver URL is configured in the repository Actions variable `ROVE6_REQUEST_ENDPOINT`. This public submission endpoint is not a credential; the spreadsheet ID, contact records, offer amount, and payment link stay on the private receiver. GitHub hosts only static page assets.
 
 ```sh
 npm test
-npm run build
+ROVE6_REQUEST_ENDPOINT='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec' npm run build
 ```
 
 The project has no runtime dependencies. Serve `dist/` with any static web server. The GitHub Actions workflow builds and publishes `dist/` to Pages.
@@ -44,7 +46,7 @@ The intended canonical page is the client's existing `https://puremedco.com/prod
 - The root production robots policy must allow Googlebot. Review the Google-Extended preference for Gemini Apps separately: it controls training as well as grounding eligibility. Do not overwrite the client's root robots policy blindly.
 - Important information is server-rendered HTML. FAQs are readable without JavaScript. Product/Organization/WebPage JSON-LD describes only visible facts and has no price, Offer, ratings, or fabricated testimonials. This does not guarantee a product rich result or an AI citation.
 - The price gate keeps offer amounts and checkout links out of public HTML, JavaScript, metadata, and GET responses. It is a contact gate, not identity verification: anyone who submits valid contact details and contact consent can receive the offer. Checkout URLs and prices can also be shared by recipients.
-- No analytics are loaded. A `rove6:request-saved` browser event fires only after a confirmed production save, with no contact details. Add client-owned analytics only after agreeing on consent and measurement requirements; do not send health or contact data to ad tags.
+- No analytics are loaded. A `rove6:request-saved` browser event fires only after a confirmed save, with no contact details. Add client-owned analytics only after agreeing on consent and measurement requirements; do not send health or contact data to ad tags.
 - The third-party design team should obtain client approval for imagery, consent/privacy wording, phone routing, current product terms, and the production domain before live traffic. An image or contact notice is not a medical recommendation.
 
 ## Sources and existing brand assets

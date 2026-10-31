@@ -2,6 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const html=await fs.readFile(new URL('../index.html',import.meta.url),'utf8');
+const app=await fs.readFile(new URL('../app.js',import.meta.url),'utf8');
+test('client review uses the completed offer screen without simulated confirmation copy',()=>{
+  for(const text of ['PREVIEW COMPLETE','Your form test is complete','No request was sent or stored','Shared privately','preview-checkout','__PREVIEW_HIDDEN__'])assert.ok(!(html+app).includes(text),text);
+  assert.ok(app.includes('await submitRequest(payload,config.requestEndpoint)'));
+  assert.ok(html.includes('Your Rove 6 offer is ready.'));
+  assert.ok(html.includes('Secure payment through HubSpot'));
+});
 test('contains crawlable product content and a gated offer layout without price or checkout URL',()=>{
   assert.equal((html.match(/<h1\b/g)||[]).length,1);
   assert.ok(html.includes('Prescription required before fulfillment'));

@@ -1,2 +1,2 @@
-// Generated at build time. This source configuration is a safe local preview.
-export const config = Object.freeze({ mode: 'preview', requestEndpoint: '' });
+// Generated at build time. An unconfigured form fails without showing an offer.
+export const config = Object.freeze({ mode: 'review', requestEndpoint: '' });

@@ -8,7 +8,6 @@ const formContent=document.getElementById('form-content');
 const success=document.getElementById('form-success');
 const offerPanel=document.getElementById('private-offer');
 const checkout=document.getElementById('offer-checkout');
-const previewCheckout=document.getElementById('preview-checkout');
 let startedAt=Date.now();
 let requestId=crypto.randomUUID();
 let busy=false;
@@ -25,33 +24,25 @@ form.addEventListener('submit',async(event)=>{
     for(const [name,message] of Object.entries(errors)){document.getElementById(name+'-error').textContent=message;document.getElementById(name).setAttribute('aria-invalid','true');}
     document.getElementById(Object.keys(errors)[0]).focus();return;
   }
-  busy=true;submit.disabled=true;submitLabel.textContent=config.mode==='preview'?'Testing form…':'Sending request…';
+  busy=true;submit.disabled=true;submitLabel.textContent='Getting your offer…';
   try{
-    if(config.mode==='preview'){
-      document.getElementById('success-kicker').textContent='PREVIEW COMPLETE';
-      document.getElementById('success-heading').textContent='Your form test is complete.';
-      document.getElementById('success-message').textContent='No request was sent or stored. This previews the offer screen; the connected page reveals pricing only after a confirmed save.';
-      document.getElementById('offer-price').textContent='Shared privately';
-      offerPanel.hidden=false;previewCheckout.hidden=false;
-    }else{
-      const payload=makePayload(values,requestId,startedAt);
-      const result=await submitRequest(payload,config.requestEndpoint);
-      const offer=validateOffer(result.offer);
-      document.getElementById('success-kicker').textContent='REQUEST RECEIVED';
-      document.getElementById('success-heading').textContent=offer?'Here’s your private offer.':'Thank you for reaching out.';
-      document.getElementById('success-message').textContent=offer?'Your request is saved. Continue to secure checkout, or talk with our team before you decide.':'Your request is saved. Our team can provide your private price and help with next steps. Please call if you’d like to speak now.';
-      if(offer){
-        document.getElementById('offer-product').textContent=offer.title;
-        document.getElementById('offer-price').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:offer.currency,maximumFractionDigits:2}).format(offer.amountMinor/100);
-        checkout.href=offer.checkoutUrl;checkout.hidden=false;offerPanel.hidden=false;
-      }
-      // No name, phone, email, prescription, or insurance information is put into analytics.
-      window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved'}}));
+    const payload=makePayload(values,requestId,startedAt);
+    const result=await submitRequest(payload,config.requestEndpoint);
+    const offer=validateOffer(result.offer);
+    document.getElementById('success-kicker').textContent='REQUEST RECEIVED';
+    document.getElementById('success-heading').textContent=offer?'Your Rove 6 offer is ready.':'Thank you for reaching out.';
+    document.getElementById('success-message').textContent=offer?'Choose secure checkout, or call us for personal help.':'Our team will be in touch to discuss your Rove 6. You can also call us below.';
+    if(offer){
+      document.getElementById('offer-product').textContent=offer.title;
+      document.getElementById('offer-price').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:offer.currency,minimumFractionDigits:offer.amountMinor%100?2:0,maximumFractionDigits:2}).format(offer.amountMinor/100);
+      checkout.href=offer.checkoutUrl;checkout.hidden=false;offerPanel.hidden=false;
     }
-    form.reset();formContent.hidden=true;success.hidden=false;success.focus();
+    // No name, phone, email, prescription, or insurance information is put into analytics.
+    window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved'}}));
+    form.reset();formContent.hidden=true;success.hidden=false;success.focus({preventScroll:true});success.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(error){
     submissionError.textContent=error.message||'Unable to send your request. Please try again or call (888) 747-7590.';
     submissionError.hidden=false;submissionError.focus();
   }finally{busy=false;submit.disabled=false;submitLabel.textContent='Request the Rove 6';}
 });
-document.getElementById('reset-form').addEventListener('click',()=>{success.hidden=true;offerPanel.hidden=true;checkout.hidden=true;checkout.removeAttribute('href');previewCheckout.hidden=true;document.getElementById('offer-price').textContent='';formContent.hidden=false;startedAt=Date.now();requestId=crypto.randomUUID();clearErrors();document.getElementById('name').focus();});
+document.getElementById('reset-form').addEventListener('click',()=>{success.hidden=true;offerPanel.hidden=true;checkout.hidden=true;checkout.removeAttribute('href');document.getElementById('offer-price').textContent='';formContent.hidden=false;startedAt=Date.now();requestId=crypto.randomUUID();clearErrors();document.getElementById('name').focus();});
