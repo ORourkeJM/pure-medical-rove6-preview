@@ -30,7 +30,7 @@ function doPost(e) {
       // An acknowledged request or a retry after an ambiguous network result is written once.
       if (last > 1) {
         const match = sheet.getRange(2,2,last-1,1).createTextFinder(item.requestId).matchEntireCell(true).findNext();
-        if (match) return json_({ok:true,requestId:item.requestId});
+        if (match) return acknowledgement_(item.requestId);
       }
       const key = 'phone:' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,item.phone));
       const cache = CacheService.getScriptCache();
@@ -42,7 +42,7 @@ function doPost(e) {
       sheet.getRange(next,1).setNumberFormat('mmm d, yyyy h:mm AM/PM');
       SpreadsheetApp.flush();
       cache.put(key,'1',60);
-      return json_({ok:true,requestId:item.requestId});
+      return acknowledgement_(item.requestId);
     } finally { lock.releaseLock(); }
   } catch (error) {
     // Return only a controlled message, not a Google exception, sheet ID, or submitted data.
@@ -69,6 +69,19 @@ function validate_(raw) {
 }
 function safeText_(value) { return /^[\s]*[=+\-@]/.test(value) ? "'"+value : value; }
 function json_(value) { return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON); }
+
+function acknowledgement_(requestId) {
+  // Configure ROVE6_OFFER_JSON privately in Script Properties. Never put offer amounts
+  // or payment links in this public template, frontend code, GET responses, or logs.
+  let offer = null;
+  try {
+    const value = JSON.parse(PropertiesService.getScriptProperties().getProperty('ROVE6_OFFER_JSON') || 'null');
+    if (value && value.currency === 'USD' && Number.isSafeInteger(value.amountMinor) && value.amountMinor > 0 && value.amountMinor <= 10000000 && typeof value.title === 'string' && value.title.trim() && value.title.length <= 120 && /^https:\/\/payments-na1\.hubspot\.com\/payments\/[A-Za-z0-9_-]+(?:\?[^#\s]*)?$/.test(value.checkoutUrl)) {
+      offer = {amountMinor:value.amountMinor,currency:'USD',title:value.title.trim(),checkoutUrl:value.checkoutUrl};
+    }
+  } catch (_) { /* The saved request remains valid; the team can provide the quote. */ }
+  return json_({ok:true,requestId:requestId,offer:offer});
+}
 
 function configureReceiver() {
   // Run this once from Extensions > Apps Script in the callback spreadsheet.

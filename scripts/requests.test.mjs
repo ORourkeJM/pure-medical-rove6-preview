@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
-import { validateRequest, makePayload, submitRequest, CONSENT_TEXT } from '../validation.js';
+import { validateRequest, makePayload, submitRequest, validateOffer, CONSENT_TEXT } from '../validation.js';
 
 const requestId='2847ddf4-6dde-45d8-94f7-7e3fe25bf888';
 const values={name:'Sample Request',phone:'(202) 555-0123',email:'sample@example.com',state:'FL',consent:true,website:''};
@@ -29,11 +29,15 @@ test('requires an explicit matching server acknowledgement',async()=>{
 test('retains server failure rather than displaying a success',async()=>{
   await assert.rejects(submitRequest(makePayload(values,requestId,Date.now()-5000),endpoint,async()=>({ok:true,json:async()=>({ok:false,message:'Unable to save your request.'})})),/Unable to save/);
 });
+test('network failures do not produce a save acknowledgement',async()=>{
+  await assert.rejects(submitRequest(makePayload(values,requestId,Date.now()-5000),endpoint,async()=>{throw new TypeError('Failed to fetch');}),/could not confirm/);
+});
 
 const source=await fs.readFile(new URL('../backend/Code.template.gs',import.meta.url),'utf8');
-function server(){
+function server(offer){
   const records=[['Submitted at','Request ID','Name','Phone','Email','State','Contact preference','Contact consent','Status','Team notes']];
   let flushed=0;const properties=new Map([['SPREADSHEET_ID','test-sheet']]);const cache=new Map();
+  if(offer)properties.set('ROVE6_OFFER_JSON',JSON.stringify(offer));
   const sheet={
     getLastRow:()=>records.length,
     getRange:(row,col,rows=1,cols=1)=>({
@@ -69,4 +73,22 @@ test('receiver validates independently and escapes spreadsheet formulas',()=>{
   assert.equal(s.post({...p,state:'ZZ'}).ok,false);assert.equal(s.records.length,1);
   assert.equal(s.post({...p,name:'=HYPERLINK("https://example.com")'}).ok,true);
   assert.ok(s.records[1][2].startsWith("'="));
+});
+const sampleOffer={amountMinor:12345,currency:'USD',title:'Sample package',checkoutUrl:'https://payments-na1.hubspot.com/payments/sample-link'};
+test('private offer is available only with a saved request, including an idempotent retry',()=>{
+  const s=server(sampleOffer);const p=makePayload(values,requestId,Date.now()-5000);
+  assert.equal(JSON.parse(s.context.doGet()).offer,undefined);
+  assert.equal(s.post({...p,consent:false}).offer,undefined);
+  assert.deepEqual(s.post(p).offer,sampleOffer);assert.equal(s.flushed,1);
+  assert.deepEqual(s.post(p).offer,sampleOffer);assert.equal(s.records.length,2);
+});
+test('missing or malformed offer keeps the saved request and gives no checkout URL',()=>{
+  for(const offer of [undefined,{...sampleOffer,checkoutUrl:'https://example.com/pay'},{...sampleOffer,amountMinor:-1}]){
+    const s=server(offer);const result=s.post(makePayload(values,requestId,Date.now()-5000));
+    assert.equal(result.ok,true);assert.equal(result.offer,null);assert.equal(s.records.length,2);
+  }
+});
+test('browser accepts only a valid USD offer with a trusted HubSpot payment URL',()=>{
+  assert.deepEqual(validateOffer(sampleOffer),sampleOffer);
+  for(const offer of [null,{...sampleOffer,currency:'EUR'},{...sampleOffer,amountMinor:0},{...sampleOffer,checkoutUrl:'javascript:alert(1)'},{...sampleOffer,checkoutUrl:'https://payments-na1.hubspot.com.evil.example/payments/sample'},{...sampleOffer,checkoutUrl:'https://user:password@payments-na1.hubspot.com/payments/sample'},{...sampleOffer,checkoutUrl:'https://payments-na1.hubspot.com/payments/purchase/session-only'}])assert.equal(validateOffer(offer),null);
 });
