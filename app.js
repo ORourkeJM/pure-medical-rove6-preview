@@ -6,6 +6,7 @@ const campaign=applyCampaignTheme();
 const form=document.getElementById('request-form');
 const submit=document.getElementById('submit-button');
 const submitLabel=document.getElementById('submit-label');
+const submitIdleLabel=submitLabel.textContent;
 const submissionError=document.getElementById('submission-error');
 const formContent=document.getElementById('form-content');
 const coverageStep=document.getElementById('coverage-step');
@@ -83,7 +84,7 @@ form.addEventListener('submit',async event=>{
     remember(requestId);showOffer(result);form.reset();
     window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved',market:campaign.market,variant:campaign.variant}}));
   }catch(error){submissionError.textContent=error.message||'Unable to send your request. Please try again or call (888) 747-7590.';submissionError.hidden=false;submissionError.focus();}
-  finally{busy=false;submit.disabled=false;submitLabel.textContent='Request the Rove 6';}
+  finally{busy=false;submit.disabled=false;submitLabel.textContent=submitIdleLabel;}
 });
 document.getElementById('reset-form').addEventListener('click',()=>{
   forget();clearOffer();success.hidden=true;formContent.hidden=true;coverageStep.hidden=false;

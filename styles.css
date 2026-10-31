@@ -55,3 +55,57 @@
 .moments.visual-moments{gap:26px;align-items:stretch}.visual-moments article{display:flex;flex-direction:column;padding:0;border:1px solid #deded6;border-radius:10px;background:var(--paper);overflow:hidden}.visual-moments .moment-photo{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:50% 48%}.visual-moments .moment-number{display:block;margin:20px 23px 0;padding:0}.visual-moments h3{margin:12px 23px 0;font-size:28px;line-height:1.15}.visual-moments p{margin:13px 23px 18px;max-width:none;font-size:16px;line-height:1.75}.visual-moments .moment-link{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:23px 23px 22px;padding-top:15px;border-top:1px solid var(--line);font-size:14px;min-height:48px;font-weight:700;text-decoration:none;color:var(--orange-dark)}.visual-moments .moment-link:hover{text-decoration:underline}.visual-moments .moment-link span{font-size:22px;line-height:1}.visual-moments p+.moment-link{margin-top:auto;padding-top:22px}:root[data-theme="standard"] .hero-photo{object-position:50% 0%}:root[data-theme="florida"] .visual-moments .moment-link{margin-top:0}
 @media(max-width:800px) and (min-width:481px){.visual-moments{grid-template-columns:1fr}.visual-moments article{display:grid;grid-template-columns:40% 1fr;column-gap:0}.visual-moments .moment-photo{grid-row:1/5;height:100%;min-height:270px}.visual-moments .moment-number{margin-top:24px}.visual-moments .moment-link{margin-top:10px}:root[data-theme="florida"] .visual-moments .moment-photo{grid-row:1/5}}
 @media(max-width:480px){.visual-moments article{display:flex}.visual-moments p{font-size:16px}.visual-moments h3{font-size:28px}.visual-moments .moment-photo{min-height:0}.visual-moments .moment-link{padding-top:18px}}
+
+/* Shared vector arrows stay crisp and avoid emoji rendering on iPhone. */
+.arrow-icon{width:20px;height:20px;flex:none;vertical-align:middle}
+.product-peek a{display:grid;place-items:center}
+.request-phone a .arrow-icon{margin-left:20px;color:#ffb48c}
+.coverage-step .form-submit .arrow-icon{display:none}
+.visual-moments .moment-link .cta-label{font-size:15px;line-height:1.4}
+
+/* National campaign: blue, white and clear, high-contrast price actions. */
+:root:not([data-theme="florida"]){
+  --navy:#14365D;--navy-deep:#0B2340;--ink:#142D4D;
+  --cream:#F2F6FC;--paper:#FFFFFF;--muted:#4D627A;--line:#CEDCEE;
+  --action:#164EAA;--action-hover:#103C87;--accent:#165AA7;
+  --orange:var(--action);--orange-dark:var(--accent);
+}
+:root:not([data-theme="florida"]) :focus-visible{outline-color:#256BC2}
+:root:not([data-theme="florida"]) .site-header{background:#F7FAFEf7;border-color:#D8E3F1}
+:root:not([data-theme="florida"]) .hero{background:linear-gradient(120deg,#F6F9FE,#EAF2FC)}
+:root:not([data-theme="florida"]) .hero-arc{border-color:#B5CCE9}
+:root:not([data-theme="florida"]) .caption-dot{background:#B9DBFF}
+:root:not([data-theme="florida"]) .button{background:var(--action);color:#FFFFFF;font-size:16px;font-weight:700;gap:16px;min-height:56px}
+:root:not([data-theme="florida"]) .button:hover{background:var(--action-hover)}
+:root:not([data-theme="florida"]) .button-small{font-size:14px;min-height:48px;padding:12px 17px;gap:12px}
+:root:not([data-theme="florida"]) .hero .button{font-size:17px;padding:17px 23px}
+:root:not([data-theme="florida"]) .sale-announcement span,
+:root:not([data-theme="florida"]) .offer-savings{background:#E0ECFC;color:#204B80}
+:root:not([data-theme="florida"]) .fact-icon{stroke:#B9DBFF}
+:root:not([data-theme="florida"]) .product-section{background:#EAF1F9}
+:root:not([data-theme="florida"]) .product-circle{background:#D7E4F5}
+:root:not([data-theme="florida"]) .visual-moments article{border-color:#CEDCEE}
+:root:not([data-theme="florida"]) .light-eyebrow,
+:root:not([data-theme="florida"]) .request-copy h2 em,
+:root:not([data-theme="florida"]) .request-benefits .icon,
+:root:not([data-theme="florida"]) .request-phone a .arrow-icon{color:#B4D7FF}
+:root:not([data-theme="florida"]) .private-offer{background:#F1F6FD;border-color:#CCDDF0}
+:root:not([data-theme="florida"]) .offer-price-row,
+:root:not([data-theme="florida"]) .offer-comparison{border-color:#CDDAE9}
+:root:not([data-theme="florida"]) .offer-timer{background:#FFFFFF;border-color:#CBDAEE}
+:root:not([data-theme="florida"]) .coverage-explainer{background:#EAF2FD;border-color:#CCDCF1}
+:root:not([data-theme="florida"]) .coverage-choices input:checked+span{background:#EBF3FF}
+:root:not([data-theme="florida"]) .coverage-step .form-submit:disabled{background:#E0E8F3;color:#4D627A;border-color:#CBD8E9}
+:root:not([data-theme="florida"]) .form-submit:disabled{opacity:1;cursor:wait}
+:root:not([data-theme="florida"]) .coverage-step .form-submit:disabled{cursor:default}
+:root:not([data-theme="florida"]) .success-icon{background:#E1ECF9;color:#1C5097}
+:root:not([data-theme="florida"]) .confirmation-status .form-kicker,
+:root:not([data-theme="florida"]) .offer-includes li::before{color:#204B80}
+:root:not([data-theme="florida"]) .offer-call{background:#FFFFFF;color:var(--navy);border-color:#91ADCE}
+:root:not([data-theme="florida"]) .offer-call:hover{background:#E7F0FC}
+@media(max-width:800px){
+  :root:not([data-theme="florida"]) .mobile-action{gap:12px;padding-inline:16px}
+  :root:not([data-theme="florida"]) .mobile-call{flex:none;font-size:14px}
+  :root:not([data-theme="florida"]) .mobile-action .button{flex:1;max-width:270px;min-width:0;font-size:14px;line-height:1.35;gap:10px;padding:12px 14px;min-height:52px}
+  :root:not([data-theme="florida"]) .mobile-action .cta-label{min-width:0}
+}

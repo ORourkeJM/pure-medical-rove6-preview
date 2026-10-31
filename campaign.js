@@ -19,6 +19,7 @@ export function applyCampaignTheme(){
   const campaign=selectCampaign(window.location.search,storage);
   document.documentElement.dataset.theme=campaign.variant;
   if(campaign.variant==='florida'){
+    document.querySelectorAll('[data-florida-label]').forEach(label=>{label.textContent=label.dataset.floridaLabel;});
     const logo=document.querySelector('.brand img');logo.src='./assets/logo-florida-coral-teal.png';logo.width=800;logo.height=422;
     const text=(selector,value)=>{const el=document.querySelector(selector);if(el)el.textContent=value;};
     text('.hero-copy .eyebrow','INOGEN ROVE 6 · FLORIDA LIVING');

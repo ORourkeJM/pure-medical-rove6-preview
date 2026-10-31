@@ -21,6 +21,8 @@ The product section and footer link to the self-hosted `assets/inogen-rove-6-spe
 
 The national entry page uses a family-focused hero and three photographic stories: everyday routines, time with family, and day trips. Every lifestyle image includes a reference-derived Rove 6. Each story card links to `#request`, using the same Medicare question, contact validation, private sale quote, 24-hour price hold, checkout URL and phone option as the Florida variation. National photos are AI-generated illustrative scenes, not patient testimonials.
 
+The National palette uses navy `#14365D`, cobalt actions `#164EAA`, pale blue `#F2F6FC`, white, and slate `#4D627A`. Primary actions use larger white text with a measured 7.77:1 contrast ratio against the button fill. Pricing entry links and the contact-submit button read “See Your Exclusive Price”; the exact client-written “See My Options” step and the checkout/call actions retain their task-specific labels. Florida keeps its coastal colors and request wording. Shared inline SVG arrows avoid emoji rendering on iPhone. Mobile buttons were checked at 320px and 390px without horizontal overflow.
+
 ## Florida lifestyle variation
 
 - `?market=florida&variant=standard` forces the national design for Florida control review.
