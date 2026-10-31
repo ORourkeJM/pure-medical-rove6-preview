@@ -59,7 +59,7 @@ The intended canonical page is the client's existing `https://puremedco.com/prod
 
 ## Florida imagery and colors
 
-The Florida design uses Atlantic blue `#124C5A`, sea-glass teal `#147980`, warm sand `#FFF5E4`, seafoam `#E5F2EB`, soft coral `#F09A78`, and sunshine gold `#EDBD5C`. Its golf-cart hero, beach-walk scene, and offshore-fishing scene are AI-generated illustrative lifestyle photographs. They are not customer testimonials or depictions of the product in use. The Rove 6 product photo remains the original client product asset. Optimized WebP files are in `assets/florida-*.webp`; the national design retains its existing image and colors.
+The Florida design uses Atlantic blue `#124C5A`, sea-glass teal `#147980`, warm sand `#FFF5E4`, seafoam `#E5F2EB`, soft coral `#F09A78`, and sunshine gold `#EDBD5C`. Its golf-cart hero, beach-walk scene, and offshore-fishing scene are AI-generated concept composites with a Rove 6 added from the original product-photo reference. They are illustrative scenes, not patient testimonials. The standalone Rove 6 product photo remains the original client product asset. Current composite WebP files are in `assets/florida-*-product.webp`; the national design retains its existing image and colors.
 
 ## Sources and existing brand assets
 
