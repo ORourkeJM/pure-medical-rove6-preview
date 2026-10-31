@@ -1,0 +1,58 @@
+# Pure Medical Rove 6 landing page
+
+A static, accessible landing page for a prescription portable oxygen concentrator. The primary action is a callback request. Pricing is provided privately; no payment or prescription is collected online.
+
+## Preview
+
+GitHub Pages publishes a design preview with `noindex`. Its request form validates locally and reports that nothing was sent. It does not collect leads or put contact data into GitHub. Keep paid traffic pointed away from this preview.
+
+```sh
+npm test
+npm run build
+```
+
+The project has no runtime dependencies. Serve `dist/` with any static web server. The GitHub Actions workflow builds and publishes `dist/` to Pages.
+
+## Connect requests to the private Google Sheet
+
+The connected Google Drive account owns the callback sheet. It is private. Its ID is deliberately absent from public frontend files. This repository includes a generic Apps Script receiver but no Google credentials.
+
+1. Open the callback spreadsheet and select **Extensions → Apps Script**.
+2. Paste `backend/Code.template.gs` into `Code.gs`.
+3. Run `configureReceiver` once. Google will ask the owner to authorize spreadsheet access.
+4. Choose **Deploy → New deployment → Web app**. Execute as the owner; access must allow **Anyone** so visitors do not have to sign in to Google. Keep the spreadsheet itself private.
+5. Copy the resulting `/exec` deployment URL. A `/dev` test URL will not work for anonymous visitors.
+6. On the production host, build with the endpoint:
+
+```sh
+ROVE6_REQUEST_ENDPOINT='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec' node scripts/build.mjs --production
+```
+
+7. Test a clearly marked sample request from the production origin. Verify the row is saved in **Requests**, the browser receives a readable acknowledgement, retrying the same request does not duplicate it, and a deliberately failed submission does not show success. Delete only the sample row after reviewing it. If your Workspace administrator disallows anonymous Apps Script web apps, use a server endpoint on your production host instead.
+
+No live submission has been tested before the owner authorizes the web app. The receiver validates on the server, checks callback consent, rejects its honeypot and premature submissions, uses a write lock, deduplicates request IDs, and escapes spreadsheet formula prefixes. Add a managed CAPTCHA or stronger abuse protection before high-volume public advertising if needed. Do not store prescriptions, diagnoses, payment information, or insurance identifiers here.
+
+## Production and search
+
+The intended canonical page is the client's existing `https://puremedco.com/products/rove6/`. Publish the production build there, or update the canonical, Open Graph URL, structured data, sitemap, and internal links together if the URL changes. The production build requires an endpoint and switches the robots meta tag to `index, follow`.
+
+- Use the client's production hosting for the live commercial landing page. GitHub Pages is the design preview.
+- Verify Search Console ownership, inspect the canonical URL, submit the production sitemap, and link the page from the main site. Root `robots.txt`, WordPress indexing controls, and Search Console's generative AI inclusion setting need the site's owner to check them.
+- The root production robots policy must allow Googlebot. Review the Google-Extended preference for Gemini Apps separately: it controls training as well as grounding eligibility. Do not overwrite the client's root robots policy blindly.
+- Important information is server-rendered HTML. FAQs are readable without JavaScript. Product/Organization/WebPage JSON-LD describes only visible facts and has no price, Offer, ratings, or fabricated testimonials. This does not guarantee a product rich result or an AI citation.
+- No analytics are loaded. A `rove6:request-saved` browser event fires only after a confirmed production save, with no contact details. Add client-owned analytics only after agreeing on consent and measurement requirements; do not send health or contact data to ad tags.
+- The third-party design team should obtain client approval for imagery, consent/privacy wording, phone routing, current product terms, and the production domain before live traffic. An image or contact notice is not a medical recommendation.
+
+## Sources and existing brand assets
+
+Reused from publicly available client materials for this authorized design preview:
+
+- Logos: `https://puremedical-rove6.pplx.app/assets/pure-medical-logo-blue.png` and `pure-medical-logo-white.png`.
+- Mobility photo: `https://puremedco.com/wp-content/uploads/2026/02/Pure-Medical-Img-1.png`. This is an illustrative mobility scene, not a customer testimonial or identification of the device in the bag.
+- Actual product photo: `https://puremedco.com/wp-content/uploads/2026/02/Inogen-Rove-6-Item-1.png`.
+- Product specifications: `https://provider.inogen.com/en/products/rove-6-system`.
+- Google search guidance: `https://developers.google.com/search/docs/fundamentals/ai-optimization-guide`.
+- Gemini grounding control: `https://developers.google.com/search/blog/2026/10/ai-training-control`.
+- Apps Script deployment: `https://developers.google.com/apps-script/guides/web`.
+
+Product images and trademarks remain the property of their respective owners.
