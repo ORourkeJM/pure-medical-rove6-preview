@@ -7,8 +7,10 @@ import { validateRequest, makePayload, submitRequest, validateOffer, CONSENT_TEX
 const requestId='2847ddf4-6dde-45d8-94f7-7e3fe25bf888';
 const values={name:'Sample Request',phone:'(202) 555-0123',email:'sample@example.com',state:'FL',consent:true,website:''};
 const endpoint='https://script.google.com/macros/s/example-deployment/exec';
-test('validates phone and consent while allowing an optional email',()=>{
-  assert.deepEqual(validateRequest({...values,email:''}),{});
+test('requires a valid email and explicit contact consent alongside a phone number',()=>{
+  assert.deepEqual(validateRequest(values),{});
+  assert.equal(validateRequest({...values,email:''}).email,'Please enter your email address.');
+  assert.ok(validateRequest({...values,email:'not-an-email'}).email);
   assert.deepEqual(Object.keys(validateRequest({...values,phone:'123',consent:false})),['phone','consent']);
 });
 test('rejects unconfigured delivery before transmitting contact details',async()=>{
@@ -63,11 +65,13 @@ test('receiver persists once and acknowledges repeated request IDs without dupli
   const s=server();const p=makePayload(values,requestId,Date.now()-5000);
   assert.equal(s.post(p).ok,true);assert.equal(s.records.length,2);assert.equal(s.flushed,1);
   assert.equal(s.records[1][2],values.name);assert.equal(s.records[1][3],'2025550123');
-  assert.equal(s.records[1][7],CONSENT_TEXT);assert.equal(s.records[1][8],'New');
+  assert.equal(s.records[1][6],'Call, text, email');assert.equal(s.records[1][7],CONSENT_TEXT);assert.equal(s.records[1][8],'New');
   assert.equal(s.post(p).ok,true);assert.equal(s.records.length,2);
 });
 test('receiver validates independently and escapes spreadsheet formulas',()=>{
   const s=server();const p=makePayload(values,requestId,Date.now()-5000);
+  assert.equal(s.post({...p,email:''}).ok,false);assert.equal(s.records.length,1);
+  assert.equal(s.post({...p,consentText:'Please contact me.'}).ok,false);assert.equal(s.records.length,1);
   assert.equal(s.post({...p,consent:false}).ok,false);assert.equal(s.records.length,1);
   assert.equal(s.post({...p,website:'bot'}).ok,false);assert.equal(s.records.length,1);
   assert.equal(s.post({...p,state:'ZZ'}).ok,false);assert.equal(s.records.length,1);
@@ -91,4 +95,12 @@ test('missing or malformed offer keeps the saved request and gives no checkout U
 test('browser accepts only a valid USD offer with a trusted HubSpot payment URL',()=>{
   assert.deepEqual(validateOffer(sampleOffer),sampleOffer);
   for(const offer of [null,{...sampleOffer,currency:'EUR'},{...sampleOffer,amountMinor:0},{...sampleOffer,checkoutUrl:'javascript:alert(1)'},{...sampleOffer,checkoutUrl:'https://payments-na1.hubspot.com.evil.example/payments/sample'},{...sampleOffer,checkoutUrl:'https://user:password@payments-na1.hubspot.com/payments/sample'},{...sampleOffer,checkoutUrl:'https://payments-na1.hubspot.com/payments/purchase/session-only'}])assert.equal(validateOffer(offer),null);
+});
+
+test('receiver records the Florida variation and explicit contact channels with the request',()=>{
+  const s=server();const p=makePayload(values,requestId,Date.now()-5000,{market:'florida',variant:'florida'});
+  assert.equal(p.market,'florida');assert.equal(p.variant,'florida');
+  assert.equal(s.post(p).ok,true);
+  assert.equal(s.records[1][6],'Call, text, email');
+  assert.equal(s.records[1][9],'Page: florida | Market: florida');
 });

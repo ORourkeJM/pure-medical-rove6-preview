@@ -4,7 +4,7 @@ A static, accessible landing page for a prescription portable oxygen concentrato
 
 ## Preview
 
-GitHub Pages publishes a fully connected client-review build with `noindex`. The form saves contact requests to the authorized private Google Sheet, then displays the real server-supplied offer and a working reusable HubSpot checkout link. It uses the same customer-facing flow as the production build, without test copy or placeholder pricing. Keep paid traffic pointed at the client's production host.
+GitHub Pages publishes a fully connected client-review build with `noindex`. The form requires name, phone, email and an unchecked, explicit permission box covering calls, texts and emails about the inquiry or order. It saves contact requests to the authorized private Google Sheet, then displays the real server-supplied offer and a working reusable HubSpot checkout link. It uses the same customer-facing flow as the production build, without test copy or placeholder pricing. Keep paid traffic pointed at the client's production host.
 
 The receiver URL is configured in the repository Actions variable `ROVE6_REQUEST_ENDPOINT`. This public submission endpoint is not a credential; the spreadsheet ID, contact records, offer amount, and payment link stay on the private receiver. GitHub hosts only static page assets.
 
@@ -16,6 +16,14 @@ ROVE6_REQUEST_ENDPOINT='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/ex
 The project has no runtime dependencies. Serve `dist/` with any static web server. The GitHub Actions workflow builds and publishes `dist/` to Pages.
 
 The product section and footer link to the self-hosted `assets/inogen-rove-6-specifications.pdf`. It is a one-page Pure Medical summary of published manufacturer specifications, with no pricing. Visitors can view or download the PDF without navigating to the manufacturer website.
+
+## Florida lifestyle variation
+
+- `?market=florida&variant=standard` forces the national design for Florida control review.
+- `?market=florida&variant=florida` forces the coastal Florida lifestyle design for review.
+- `?market=florida` splits Florida campaign visitors 50/50 and remembers the assigned version in their browser. Campaign names containing `florida` also select this audience. Explicit review overrides do not overwrite the stored assignment.
+- Other traffic uses the national design. No IP-location service is used. Both variants keep the same product facts, required fields, explicit contact permission, offer and checkout process.
+- Each saved request records its page variant and market in Team notes. The request-saved browser event includes these two non-personal labels; no analytics service is installed.
 
 ## Connect requests to the private Google Sheet
 

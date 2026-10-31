@@ -1,5 +1,7 @@
 import { config } from './config.js';
+import { applyCampaignTheme } from './campaign.js';
 import { validateRequest, makePayload, submitRequest, validateOffer } from './validation.js';
+const campaign=applyCampaignTheme();
 const form=document.getElementById('request-form');
 const submit=document.getElementById('submit-button');
 const submitLabel=document.getElementById('submit-label');
@@ -26,7 +28,7 @@ form.addEventListener('submit',async(event)=>{
   }
   busy=true;submit.disabled=true;submitLabel.textContent='Getting your offer…';
   try{
-    const payload=makePayload(values,requestId,startedAt);
+    const payload=makePayload(values,requestId,startedAt,campaign);
     const result=await submitRequest(payload,config.requestEndpoint);
     const offer=validateOffer(result.offer);
     document.getElementById('success-kicker').textContent='REQUEST RECEIVED';
@@ -38,7 +40,7 @@ form.addEventListener('submit',async(event)=>{
       checkout.href=offer.checkoutUrl;checkout.hidden=false;offerPanel.hidden=false;
     }
     // No name, phone, email, prescription, or insurance information is put into analytics.
-    window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved'}}));
+    window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved',market:campaign.market,variant:campaign.variant}}));
     form.reset();formContent.hidden=true;success.hidden=false;success.focus({preventScroll:true});success.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(error){
     submissionError.textContent=error.message||'Unable to send your request. Please try again or call (888) 747-7590.';

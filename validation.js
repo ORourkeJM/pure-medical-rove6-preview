@@ -1,4 +1,4 @@
-export const CONSENT_TEXT = 'Please have the Pure Medical team contact me about my Rove 6 request using the details I provided.';
+export const CONSENT_TEXT = 'I agree that Pure Medical may call, text, or email me at the contact details I provide about my Rove 6 inquiry or order.';
 export function validateRequest(values) {
   const errors = {};
   const name = String(values.name || '').trim();
@@ -7,12 +7,13 @@ export function validateRequest(values) {
   const digits = phone.replace(/\D/g, '');
   if (name.length < 2 || name.length > 100 || /[\r\n]/.test(name)) errors.name = 'Please enter your name.';
   if (!(digits.length === 10 || (digits.length === 11 && digits.startsWith('1')))) errors.phone = 'Please enter a 10-digit U.S. phone number.';
-  if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) errors.email = 'Please enter a valid email address, or leave this blank.';
-  if (values.consent !== true) errors.consent = 'Please confirm that our team may contact you about this request.';
+  if (!email) errors.email = 'Please enter your email address.';
+  else if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Please enter a valid email address.';
+  if (values.consent !== true) errors.consent = 'Please confirm permission to call, text, or email you about your inquiry or order.';
   return errors;
 }
-export function makePayload(values, requestId, startedAt) {
-  return { requestId, name: String(values.name || '').trim(), phone: String(values.phone || '').trim(), email: String(values.email || '').trim(), state: String(values.state || '').trim(), consent: values.consent === true, consentText: CONSENT_TEXT, contactPreference: 'Phone', website: String(values.website || ''), startedAt };
+export function makePayload(values, requestId, startedAt, campaign = {}) {
+  return { requestId, name: String(values.name || '').trim(), phone: String(values.phone || '').trim(), email: String(values.email || '').trim(), state: String(values.state || '').trim(), consent: values.consent === true, consentText: CONSENT_TEXT, contactPreference: 'Call, text, email', market: campaign.market === 'florida' ? 'florida' : 'national', variant: campaign.market === 'florida' && campaign.variant === 'florida' ? 'florida' : 'standard', website: String(values.website || ''), startedAt };
 }
 export function validateOffer(offer) {
   if (!offer || offer.currency !== 'USD' || !Number.isSafeInteger(offer.amountMinor) || offer.amountMinor <= 0 || offer.amountMinor > 10000000 || typeof offer.title !== 'string' || !offer.title.trim() || offer.title.length > 120) return null;

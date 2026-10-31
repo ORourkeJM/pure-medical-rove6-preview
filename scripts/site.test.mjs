@@ -26,3 +26,10 @@ test('all local navigation targets exist and form controls have labels',()=>{
   for(const id of ['name','phone','email','state','consent'])assert.ok(html.includes(`for="${id}"`));
   assert.ok(html.includes('role="alert"'));assert.ok(html.includes('noscript'));
 });
+
+test('email and explicit contact permission are required and consent is not preselected',()=>{
+  assert.match(html,/<input[^>]*id="email"[^>]*required/);
+  const consent=html.match(/<input[^>]*id="consent"[^>]*>/)[0];
+  assert.ok(consent.includes('required'));assert.ok(!consent.includes('checked'));
+  assert.ok(html.includes('may call, text, or email me'));
+});
