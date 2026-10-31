@@ -39,7 +39,7 @@ export function applyCampaignTheme(){
     document.querySelectorAll('.moments article').forEach((article,index)=>{
       const moment=moments[index];
       article.querySelector('h3').textContent=moment.title;article.querySelector('p').textContent=moment.copy;
-      const image=document.createElement('img');image.src='./assets/'+moment.image;image.alt=moment.alt;image.loading='lazy';image.width=800;image.height=600;image.className='moment-photo';article.prepend(image);
+      const image=article.querySelector('.moment-photo')||document.createElement('img');image.src='./assets/'+moment.image;image.alt=moment.alt;image.loading='lazy';image.width=800;image.height=600;image.className='moment-photo';if(!image.parentElement)article.prepend(image);
     });
   }
   return campaign;

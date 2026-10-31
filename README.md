@@ -17,6 +17,10 @@ The project has no runtime dependencies. Serve `dist/` with any static web serve
 
 The product section and footer link to the self-hosted `assets/inogen-rove-6-specifications.pdf`. It is a one-page Pure Medical summary of published manufacturer specifications, with no pricing. Visitors can view or download the PDF without navigating to the manufacturer website.
 
+## National story and shared conversion flow
+
+The national entry page uses a family-focused hero and three photographic stories: everyday routines, time with family, and day trips. Every lifestyle image includes a reference-derived Rove 6. Each story card links to `#request`, using the same Medicare question, contact validation, private sale quote, 24-hour price hold, checkout URL and phone option as the Florida variation. National photos are AI-generated illustrative scenes, not patient testimonials.
+
 ## Florida lifestyle variation
 
 - `?market=florida&variant=standard` forces the national design for Florida control review.
