@@ -2,6 +2,7 @@ import { config } from './config.js';
 import { applyCampaignTheme } from './campaign.js';
 import { validateRequest, makePayload, submitRequest, resumeOffer, validateOffer } from './validation.js';
 import { coverageMessage, countdownParts, remainingHold } from './flow.js';
+import { checkoutUrlWithEmail } from './checkout.js';
 const campaign=applyCampaignTheme();
 const form=document.getElementById('request-form');
 const submit=document.getElementById('submit-button');
@@ -15,18 +16,21 @@ const success=document.getElementById('form-success');
 const offerPanel=document.getElementById('private-offer');
 const checkout=document.getElementById('offer-checkout');
 const STORAGE_KEY='rove6:private-offer:v1';
+const CHECKOUT_EMAIL_KEY='rove6:checkout-email:v1';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-let startedAt=Date.now(),requestId=crypto.randomUUID(),coverageAnswer='',busy=false,timer=null;
+let startedAt=Date.now(),requestId=crypto.randomUUID(),coverageAnswer='',checkoutEmail='',busy=false,timer=null;
 function remember(id){try{localStorage.setItem(STORAGE_KEY,id);}catch{}}
-function forget(){try{localStorage.removeItem(STORAGE_KEY);}catch{}}
-function progress(step){for(const name of ['coverage','details','offer']){const el=document.getElementById('progress-'+name);el.toggleAttribute('data-complete',['coverage','details','offer'].indexOf(name)<step);if(name===['coverage','details','offer'][step])el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');}}
+function forget(){try{localStorage.removeItem(STORAGE_KEY);}catch{}try{sessionStorage.removeItem(CHECKOUT_EMAIL_KEY);}catch{}checkoutEmail='';}
+function rememberCheckoutEmail(id,email){checkoutEmail=email;try{sessionStorage.setItem(CHECKOUT_EMAIL_KEY,JSON.stringify({requestId:id,email}));}catch{}}
+function restoredCheckoutEmail(id){try{const saved=JSON.parse(sessionStorage.getItem(CHECKOUT_EMAIL_KEY));return saved?.requestId===id&&typeof saved.email==='string'?saved.email:'';}catch{return '';}}
+function progress(step){const current=step===2?'order':'price';for(const name of ['price','order']){const el=document.getElementById('progress-'+name);el.toggleAttribute('data-complete',name==='price'&&current==='order');if(name===current)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');}}
 function focusStep(el){el.focus({preventScroll:true});el.scrollIntoView({behavior:'smooth',block:'start'});}
 function clearErrors(){
   for(const name of ['name','phone','email','consent']){document.getElementById(name+'-error').textContent='';document.getElementById(name).removeAttribute('aria-invalid');}
   submissionError.hidden=true;
 }
 function clearOffer(){
-  clearInterval(timer);timer=null;offerPanel.hidden=true;checkout.hidden=true;checkout.removeAttribute('href');
+  clearInterval(timer);timer=null;offerPanel.hidden=true;checkout.hidden=true;checkout.removeAttribute('href');document.getElementById('checkout-prefill').hidden=true;
   for(const id of ['offer-comparison','offer-savings','offer-timer'])document.getElementById(id).hidden=true;
   for(const id of ['offer-price','offer-regular','offer-savings-amount'])document.getElementById(id).textContent='';
 }
@@ -44,9 +48,9 @@ function showOffer(result,scroll=true){
   document.getElementById('confirmation-coverage').hidden=false;
   if(result.expired===true){expiredOffer();if(scroll)focusStep(success);return;}
   const offer=validateOffer(result.offer);
-  document.getElementById('success-kicker').textContent=offer?'END-OF-SEASON SALE':'REQUEST RECEIVED';
+  document.getElementById('success-kicker').textContent=offer?'STEP 2 · YOUR EXCLUSIVE PRICE':'YOUR DETAILS ARE SAVED';
   document.getElementById('success-heading').textContent=offer?'Your Rove 6 offer is ready.':'Thank you for reaching out.';
-  document.getElementById('success-message').textContent=offer?'Your private sale offer is ready. Choose secure checkout, or call us for personal help.':'Our team will be in touch to discuss your Rove 6. You can also call us below.';
+  document.getElementById('success-message').textContent=offer?'Your exclusive price is ready. Continue to secure checkout, or call us for personal help.':'Our team will be in touch to discuss your Rove 6. You can also call us below.';
   if(offer){
     const money=value=>new Intl.NumberFormat('en-US',{style:'currency',currency:offer.currency,minimumFractionDigits:value%100?2:0,maximumFractionDigits:2}).format(value/100);
     document.getElementById('offer-product').textContent=offer.title;
@@ -56,7 +60,7 @@ function showOffer(result,scroll=true){
       document.getElementById('offer-savings-amount').textContent=money(offer.regularAmountMinor-offer.amountMinor);
       document.getElementById('offer-comparison').hidden=false;document.getElementById('offer-savings').hidden=false;
     }
-    checkout.href=offer.checkoutUrl;checkout.hidden=false;offerPanel.hidden=false;
+    checkout.href=checkoutUrlWithEmail(offer.checkoutUrl,checkoutEmail);checkout.hidden=false;offerPanel.hidden=false;document.getElementById('checkout-prefill').hidden=!new URL(checkout.href).searchParams.has('email');
     if(Number.isFinite(result.expiresAt)&&Number.isFinite(result.serverNow)){
       const receivedAt=performance.now();
       document.getElementById('offer-deadline').textContent='Price held until '+new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'}).format(new Date(result.expiresAt))+'.';
@@ -81,7 +85,7 @@ form.addEventListener('submit',async event=>{
     const payload=makePayload(values,requestId,startedAt,campaign);
     const result=await submitRequest(payload,config.requestEndpoint);
     // Coverage answers stay in this page. They are not sent to the receiver or analytics.
-    remember(requestId);showOffer(result);form.reset();
+    remember(requestId);rememberCheckoutEmail(requestId,payload.email);showOffer(result);form.reset();
     window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved',market:campaign.market,variant:campaign.variant}}));
   }catch(error){submissionError.textContent=error.message||'Unable to send your request. Please try again or call (888) 747-7590.';submissionError.hidden=false;submissionError.focus();}
   finally{busy=false;submit.disabled=false;submitLabel.textContent=submitIdleLabel;}
@@ -93,4 +97,4 @@ document.getElementById('reset-form').addEventListener('click',()=>{
   coverageAnswer='';coverageNext.disabled=true;startedAt=Date.now();requestId=crypto.randomUUID();clearErrors();progress(0);focusStep(coverageStep);
 });
 let savedId;try{savedId=localStorage.getItem(STORAGE_KEY);}catch{}
-if(savedId&&uuid.test(savedId))resumeOffer(savedId,config.requestEndpoint).then(result=>{requestId=savedId;showOffer(result);}).catch(()=>{ /* A network error never reveals an unconfirmed offer or resets its server deadline. */ });
+if(savedId&&uuid.test(savedId))resumeOffer(savedId,config.requestEndpoint).then(result=>{requestId=savedId;checkoutEmail=restoredCheckoutEmail(savedId);showOffer(result);}).catch(()=>{ /* A network error never reveals an unconfirmed offer or resets its server deadline. */ });

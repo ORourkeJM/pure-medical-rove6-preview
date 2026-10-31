@@ -109,3 +109,19 @@
   :root:not([data-theme="florida"]) .mobile-action .button{flex:1;max-width:270px;min-width:0;font-size:14px;line-height:1.35;gap:10px;padding:12px 14px;min-height:52px}
   :root:not([data-theme="florida"]) .mobile-action .cta-label{min-width:0}
 }
+
+/* One price-and-order journey for both campaign stories. */
+.steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+.form-progress{grid-template-columns:repeat(2,minmax(0,1fr))}
+.form-progress li{font-size:11px;line-height:1.55}
+.checkout-prefill{font-size:12px;line-height:1.7;color:var(--muted);margin-top:12px;text-align:center}
+:root[data-theme="florida"] .hero .button{font-size:17px}
+:root[data-theme="florida"] .form-submit{font-size:16px}
+@media(max-width:800px){
+  .mobile-action{gap:12px;padding-inline:16px}
+  .mobile-call{flex:none;font-size:14px}
+  .mobile-action .button{flex:1;max-width:270px;min-width:0;font-size:14px;line-height:1.35;gap:10px;padding:12px 14px;min-height:52px}
+  .mobile-action .cta-label{min-width:0}
+}
+
+@media(max-width:480px){:root[data-theme="florida"] .hero h1{font-size:clamp(38px,11.8vw,46px)}}

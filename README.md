@@ -21,7 +21,7 @@ The product section and footer link to the self-hosted `assets/inogen-rove-6-spe
 
 The national entry page uses a family-focused hero and three photographic stories: everyday routines, time with family, and day trips. Every lifestyle image includes a reference-derived Rove 6. Each story card links to `#request`, using the same Medicare question, contact validation, private sale quote, 24-hour price hold, checkout URL and phone option as the Florida variation. National photos are AI-generated illustrative scenes, not patient testimonials.
 
-The National palette uses navy `#14365D`, cobalt actions `#164EAA`, pale blue `#F2F6FC`, white, and slate `#4D627A`. Primary actions use larger white text with a measured 7.77:1 contrast ratio against the button fill. Pricing entry links and the contact-submit button read “See Your Exclusive Price”; the exact client-written “See My Options” step and the checkout/call actions retain their task-specific labels. Florida keeps its coastal colors and request wording. Shared inline SVG arrows avoid emoji rendering on iPhone. Mobile buttons were checked at 320px and 390px without horizontal overflow.
+The National palette uses navy `#14365D`, cobalt actions `#164EAA`, pale blue `#F2F6FC`, white, and slate `#4D627A`. Primary actions use larger white text with a measured 7.77:1 contrast ratio against the button fill. Pricing entry links and the contact-submit button read “See Your Exclusive Price”; the exact client-written “See My Options” step and the checkout/call actions retain their task-specific labels. Florida keeps its coastal colors and shares the same exclusive-price wording. Shared inline SVG arrows avoid emoji rendering on iPhone. Mobile buttons were checked at 320px and 390px without horizontal overflow.
 
 ## Florida lifestyle variation
 
@@ -51,11 +51,21 @@ ROVE6_REQUEST_ENDPOINT='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/ex
 
 The receiver validates on the server, checks callback consent, rejects its honeypot and premature submissions, uses a write lock, deduplicates request IDs, and escapes spreadsheet formula prefixes. Add a managed CAPTCHA or stronger abuse protection before high-volume public advertising if needed. Do not store prescriptions, diagnoses, payment information, or insurance identifiers here.
 
+## Two-step price and order flow
+
+Both campaign stories use “See Your Exclusive Price.” Step 1 contains the existing client-written coverage question and required contact details/permission. A confirmed save moves the progress indicator to Step 2, which shows the private offer and secure checkout/call choices. No payment is made by submitting Step 1.
+
+Only email prefill has been verified on the current hosted HubSpot payment link. The browser adds an encoded `email` parameter after a confirmed save; it carries plus-addressing correctly. Email is kept in memory and a tab-scoped `sessionStorage` entry bound to the saved request UUID, so refreshing the same tab can retain prefill. If that entry is unavailable, checkout still works without prefill. Reset clears the session entry. No name, phone, coverage answer or consent wording is added to the checkout URL. No contact data is sent to analytics.
+
+The email is visible in the buyer’s checkout URL and browser history. Treat those URLs as personal and do not share or log them as generic campaign links. The base payment URL remains supplied by the private receiver.
+
+The tested payment page did not prefill its shipping-name fields from form-property query parameters and has no contact-phone field. Full name/phone synchronization requires the client-owned HubSpot form/CRM integration and approved field mapping. Do not claim that the current Sheet connection creates a HubSpot contact before checkout. HubSpot supports connecting native form submissions and payments, including carrying/locking the form email at checkout: https://knowledge.hubspot.com/forms/redirect-a-form-to-a-payment-link. Native prefilled contact data on identified invoice/quote checkouts is documented separately: https://knowledge.hubspot.com/payment-processing/configure-your-buyer-checkout-experience.
+
 ## Personal 24-hour price hold
 
 After a successful save, the receiver stores a quote snapshot in private Script Properties, including its sale amount, verified comparison amount, checkout URL, issue time and fixed expiry 24 hours later. A retry or resume returns the original snapshot and expiry. Expired quotes return no amount or checkout URL. The page hides checkout and offers a call after expiry.
 
-The browser stores only the random request UUID to resume that saved quote after refresh. No coverage answer or contact details are stored for this purpose. Resume uses a POST body `{action:"resume", requestId}` and does not create a lead or fire another conversion event. GET remains an amount-free health check.
+Local storage contains only the random request UUID to resume the saved quote. The tab-scoped session cache additionally retains the submitted email with its matching UUID for checkout prefill. No name, phone or coverage answer is kept there. Resume uses a POST body `{action:"resume", requestId}` and does not return contact data, create a lead or fire another conversion event. GET remains an amount-free health check.
 
 This is a personal quote-validity window, not a rolling claim that the entire sale ends tomorrow. HubSpot manages the reusable payment link independently; coordinate its availability and checkout terms with the client if strict transaction-level expiration is required. Retire private quote snapshots under an agreed retention policy or move them to a client-owned quote store before scaling beyond the Apps Script property limits.
 

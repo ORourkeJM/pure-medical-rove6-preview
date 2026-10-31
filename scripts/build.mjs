@@ -11,7 +11,7 @@ const dist=path.join(root,'dist');await fs.mkdir(dist,{recursive:true});
 let html=await fs.readFile(path.join(root,'index.html'),'utf8');
 html=html.replace('__ROBOTS__',production?'index, follow, max-image-preview:large':'noindex, nofollow').replace('__STATE_OPTIONS__',stateOptions);
 await fs.writeFile(path.join(dist,'index.html'),html);
-for(const file of ['styles.css','app.js','validation.js','campaign.js','flow.js'])await fs.copyFile(path.join(root,file),path.join(dist,file));
+for(const file of ['styles.css','app.js','validation.js','campaign.js','flow.js','checkout.js'])await fs.copyFile(path.join(root,file),path.join(dist,file));
 await fs.cp(path.join(root,'assets'),path.join(dist,'assets'),{recursive:true});
 await fs.writeFile(path.join(dist,'config.js'),`export const config=Object.freeze(${JSON.stringify({mode:production?'production':'review',requestEndpoint:endpoint})});\n`);
 await fs.writeFile(path.join(dist,'.nojekyll'),'');
