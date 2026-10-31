@@ -13,6 +13,8 @@ npm run build
 
 The project has no runtime dependencies. Serve `dist/` with any static web server. The GitHub Actions workflow builds and publishes `dist/` to Pages.
 
+The product section and footer link to the self-hosted `assets/inogen-rove-6-specifications.pdf`. It is a one-page Pure Medical summary of published manufacturer specifications, with no pricing. Visitors can view or download the PDF without navigating to the manufacturer website.
+
 ## Connect requests to the private Google Sheet
 
 The connected Google Drive account owns the callback sheet. It is private. Its ID is deliberately absent from public frontend files. This repository includes a generic Apps Script receiver but no Google credentials.
