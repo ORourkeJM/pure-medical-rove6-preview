@@ -57,6 +57,10 @@ The intended canonical page is the client's existing `https://puremedco.com/prod
 - No analytics are loaded. A `rove6:request-saved` browser event fires only after a confirmed save, with no contact details. Add client-owned analytics only after agreeing on consent and measurement requirements; do not send health or contact data to ad tags.
 - The third-party design team should obtain client approval for imagery, consent/privacy wording, phone routing, current product terms, and the production domain before live traffic. An image or contact notice is not a medical recommendation.
 
+## Florida imagery and colors
+
+The Florida design uses Atlantic blue `#124C5A`, sea-glass teal `#147980`, warm sand `#FFF5E4`, seafoam `#E5F2EB`, soft coral `#F09A78`, and sunshine gold `#EDBD5C`. Its golf-cart hero, beach-walk scene, and offshore-fishing scene are AI-generated illustrative lifestyle photographs. They are not customer testimonials or depictions of the product in use. The Rove 6 product photo remains the original client product asset. Optimized WebP files are in `assets/florida-*.webp`; the national design retains its existing image and colors.
+
 ## Sources and existing brand assets
 
 Reused from publicly available client materials for this authorized design preview:

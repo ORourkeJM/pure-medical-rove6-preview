@@ -18,17 +18,30 @@
 .form-success{scroll-margin-top:16px}
 
 /* Florida lifestyle variation; same Pure Medical identity and purchase flow. */
-:root[data-theme="florida"]{--navy:#164854;--navy-deep:#10333d;--cream:#f8f3e7;--paper:#fffcf5;--orange:#e47b51;--orange-dark:#a94a2e;--muted:#52686d;--line:#d7ded4}
-:root[data-theme="florida"] .hero{background:linear-gradient(120deg,#fcf4e5 8%,#edf4ec 100%)}
+:root[data-theme="florida"]{--navy:#124C5A;--navy-deep:#0C3442;--cream:#FFF5E4;--paper:#FFFCF5;--orange:#F09A78;--orange-dark:#9D4838;--muted:#4D686D;--line:#D2E1DB}
+:root[data-theme="florida"] .hero{background:linear-gradient(120deg,#FFF5E4 8%,#E5F2EB 100%)}
 :root[data-theme="florida"] .hero h1{font-size:clamp(52px,5.4vw,76px)}
-:root[data-theme="florida"] .hero h1 em{color:#2a7675}
+:root[data-theme="florida"] .hero h1 em{color:#147980}
 :root[data-theme="florida"] .hero-arc{border-color:#d7b978;border-top-left-radius:220px}
-:root[data-theme="florida"] .hero-visual::after{content:'';position:absolute;right:-17px;top:-26px;width:93px;height:93px;background:#e7b667;border-radius:50%;z-index:-2;box-shadow:0 0 0 18px #e7b6671c}
-:root[data-theme="florida"] .photo-caption{background:linear-gradient(transparent,#164854ee)}
-:root[data-theme="florida"] .product-section{background:#edf2e9}
-:root[data-theme="florida"] .product-circle{background:#dce7d8}
-:root[data-theme="florida"] .private-offer{background:#f0f3e9;border-color:#d9e0d0}
+:root[data-theme="florida"] .hero-visual::after{content:'';position:absolute;right:-17px;top:-26px;width:93px;height:93px;background:#EDBD5C;border-radius:50%;z-index:-2;box-shadow:0 0 0 18px #EDBD5C22}
+:root[data-theme="florida"] .photo-caption{background:linear-gradient(transparent,#124C5Aee)}
+:root[data-theme="florida"] .product-section{background:#E5F0E9}
+:root[data-theme="florida"] .product-circle{background:#D0E5DA}
+:root[data-theme="florida"] .private-offer{background:#EFF5EB;border-color:#D2E1DB}
 :root[data-theme="florida"] .light-eyebrow,:root[data-theme="florida"] .request-copy h2 em{color:#f7cd96}
 :root[data-theme="florida"] .photo-wrap{border-top-left-radius:180px;border-bottom-right-radius:70px}
 @media(max-width:800px){:root[data-theme="florida"] .hero h1{font-size:clamp(50px,9vw,74px)}}
 @media(max-width:480px){:root[data-theme="florida"] .hero h1{font-size:52px}:root[data-theme="florida"] .hero-visual::after{right:0;top:-15px;width:70px;height:70px}}
+
+:root[data-theme="florida"] .site-header{background:#FFFCF5f5}
+:root[data-theme="florida"] .hero-photo{object-position:50% 52%}
+:root[data-theme="florida"] .button:hover{background:#E98C6A}
+:root[data-theme="florida"] .offer-call:hover{background:#E5F0E9}
+:root[data-theme="florida"] .moments{gap:26px;align-items:stretch}
+:root[data-theme="florida"] .moments article{display:block;padding:0;border:1px solid #D6E1D8;border-radius:10px;background:var(--paper);overflow:hidden}
+:root[data-theme="florida"] .moment-photo{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:50% 52%}
+:root[data-theme="florida"] .moments .moment-number{display:block;margin:20px 23px 0;padding:0}
+:root[data-theme="florida"] .moments h3{margin:12px 23px 0;font-size:28px;line-height:1.15}
+:root[data-theme="florida"] .moments p{margin:13px 23px 26px;max-width:none;font-size:14px;line-height:1.8}
+@media(max-width:800px) and (min-width:481px){:root[data-theme="florida"] .moments{grid-template-columns:1fr}:root[data-theme="florida"] .moments article{display:grid;grid-template-columns:40% 1fr;column-gap:0}:root[data-theme="florida"] .moment-photo{grid-row:1/4;height:100%;min-height:235px}:root[data-theme="florida"] .moments .moment-number{margin-top:25px}:root[data-theme="florida"] .moments h3{font-size:27px}}
+@media(max-width:480px){:root[data-theme="florida"] .moments{gap:24px}:root[data-theme="florida"] .moments h3{font-size:28px}:root[data-theme="florida"] .moments p{font-size:14px}}
