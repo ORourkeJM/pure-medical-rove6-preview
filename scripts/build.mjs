@@ -13,6 +13,7 @@ html=html.replace('__ROBOTS__',production?'index, follow, max-image-preview:larg
 await fs.writeFile(path.join(dist,'index.html'),html);
 for(const file of ['styles.css','app.js','validation.js','campaign.js','flow.js','checkout.js'])await fs.copyFile(path.join(root,file),path.join(dist,file));
 await fs.cp(path.join(root,'assets'),path.join(dist,'assets'),{recursive:true});
+await fs.cp(path.join(root,'marine'),path.join(dist,'marine'),{recursive:true});
 await fs.writeFile(path.join(dist,'config.js'),`export const config=Object.freeze(${JSON.stringify({mode:production?'production':'review',requestEndpoint:endpoint})});\n`);
 await fs.writeFile(path.join(dist,'.nojekyll'),'');
 await fs.writeFile(path.join(dist,'robots.txt'),production?'User-agent: *\nAllow: /\n\nSitemap: https://puremedco.com/products/rove6/sitemap.xml\n':'# Design preview: HTML pages carry noindex.\nUser-agent: *\nAllow: /\nUser-agent: Google-Extended\nDisallow: /\n');

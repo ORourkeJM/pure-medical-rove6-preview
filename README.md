@@ -1,5 +1,19 @@
 # Pure Medical Rove 6 landing page
 
+## Marine client presentation
+
+The independent marine concept lives at `/marine/`, with the research and interactive fleet planner at `/marine/opportunity.html`. It shares only brand assets and hosting with the Rove 6 campaign. Marine pages remain `noindex,nofollow` in every build. No existing Rove 6 request, offer or checkout integration is used by the marine demo.
+
+The marine journey is vessel/management details → refundable deposit → delivery review. Its primary entry label is “Price Upon Request.” Required intake includes contact name, email, phone, role, flag, operation, kit quantity and unchecked permission to call, text or email about the reservation/order. The agreed deposit is $2,500 **per vessel**, including requests for multiple kits. The separate fleet planner calculates vessel count × $2,500; it does not determine clinical quantities from vessel length or process a fleet payment.
+
+**Demo behavior:** the marine checkout is a simulation with no payment fields, network submission, CRM record, callback, actual reservation or shipment. The “4242” payment method is static presentation text. Sample details and `demo_paid` status stay in `sessionStorage` for the current tab; neither is a live payment authority. Refresh preserves the demo, “Edit details” restores inputs, consent is unchecked again, and “Start a new client preview” clears it. Use fictitious sample contacts only.
+
+**Live integration contract:** replace the client-only simulation with a server-created reservation and a dedicated marine checkout. Revalidate and whitelist contact/vessel fields on that server. Store exact consent wording, timestamp and version with the request. Use a signed payment-provider webhook, check amount/currency/reservation ID, and process duplicate events idempotently. Release team follow-up only when that server confirms payment, never from a redirect or browser storage. Preserve the entered contact fields through an approved provider/CRM field mapping rather than putting names or phone numbers into URLs. Handle pending, failed, canceled, refunded and disputed payments. Keep keys and vessel-data credentials off the static site.
+
+Before live payment collection, Pure Medical supplies the actual kit/specification/intended-use documentation and photographs, quote/deposit-credit process, refund terms and timing, service/training responsibilities, realistic shipping allocation, CRM destination, dedicated payment provider and approved privacy/contact wording. A requested delivery month is not a promised dispatch date. Product suitability and applicable vessel requirements are reviewed before fulfillment. The concept does not claim that every international yacht must carry oxygen.
+
+The three marine lifestyle images are AI-generated illustrations, not product photographs or customer testimonials. Replace the generic case depiction with actual product imagery when provided. Market facts link to primary sources; acquisition scenarios are expressly assumptions, not forecasts or an approved marine media budget. Licensed AIS lookup is a proposed integration, not an implemented data source. Its eventual output should be limited to necessary vessel fields.
+
 A static, accessible landing page for a prescription portable oxygen concentrator. The flow starts with a Medicare home-oxygen coverage question, followed by the Rove 6 contact request. The coverage answer stays in the browser and does not affect the offer or get sent to the lead system. After the server confirms it was saved, the connected page displays a private offer with secure HubSpot checkout and a phone option. No payment details or prescription are collected by this page.
 
 ## Preview
