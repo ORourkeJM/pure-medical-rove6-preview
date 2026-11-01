@@ -2,6 +2,18 @@
 
 ## Marine client presentation
 
+### Marine analytics handoff
+
+The public marine landing page has an optional GA4 module. It is **inactive by default**: the client has not supplied a measurement ID. No Google tag or consent banner is loaded while disabled. The checkout and client strategy page do not load this analytics module. This preparation is not a claim that Analytics is collecting data now.
+
+To activate on an appropriate public B2B marketing page, configure repository/build variables `MARINE_GA4_MEASUREMENT_ID` (the client-owned `G-…` ID) and `MARINE_GA4_ENABLED=1`. Before activation, configure the web stream with Enhanced Measurement off (especially forms, search and outbound links), turn off Google signals and ad personalization, and review page eligibility/privacy wording for this prescribed medical product. Do not load this tag on health-care/PHI-covered pages. The existing contact checkbox is permission for inquiry/order communication; it is not analytics or advertising consent.
+
+The module uses a separate optional analytics choice, blocks the Google tag before permission, and sends only the public page view after opt-in. It strips query strings/fragments from page location, sends only the referrer origin, and accepts only an explicit allowlist of campaign slugs. It does not read forms, request GPS, send contact/vessel details, or report checkout/deposit/purchase events. Google signals, ad storage/user-data and personalization remain disabled. Reopening Analytics preferences permits disabling future page measurement. Previously stored data remains subject to the client’s retention/deletion process.
+
+Do not enable Customer Match, visitor remarketing audiences or enhanced conversions for the marine medical-device funnel by copying contact records into Google. Maintain inquiry/deposit/refund/fulfillment attribution in the client’s first-party CRM and payment systems. A future event-audience media vendor reports aggregate delivery separately; GA4 neither identifies FLIBS attendees nor receives device IDs or precise location histories.
+
+Approved campaign slugs: `marine_fll_launch_2026`, `marine_flibs_2026`, `marine_palm_beach_2026`, `marine_miami_2026`. Sources: `google`, `flibs`, `linkedin`, `marine_publisher`, `licensed_geo`, `perplexity`, `gemini`. Media: `cpc`, `paid_social`, `display`, `sponsorship`, `email`, `referral`, `organic`, `qr`. Never put personal details in campaign values. App referrals may be missing; Google AI-search placements are not reliably isolated in GA4. Validate opt-in/decline, tag blocking, sanitized network payloads, Android/iOS and duplicate page views in the client stream before traffic.
+
 The independent marine concept lives at `/marine/`, with the research and interactive fleet planner at `/marine/opportunity.html`. It shares only brand assets and hosting with the Rove 6 campaign. Marine pages remain `noindex,nofollow` in every build. No existing Rove 6 request, offer or checkout integration is used by the marine demo.
 
 The marine journey is vessel/management details → refundable deposit → delivery review. Its primary entry label is “Price Upon Request.” Required intake includes contact name, email, phone, role, flag, operation, kit quantity and unchecked permission to call, text or email about the reservation/order. The agreed deposit is $2,500 **per vessel**, including requests for multiple kits. The separate fleet planner calculates vessel count × $2,500; it does not determine clinical quantities from vessel length or process a fleet payment.
