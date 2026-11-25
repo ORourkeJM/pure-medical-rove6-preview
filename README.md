@@ -43,19 +43,15 @@ The project has no runtime dependencies. Serve `dist/` with any static web serve
 
 The product section and footer link to the self-hosted `assets/inogen-rove-6-specifications.pdf`. It is a one-page Pure Medical summary of published manufacturer specifications, with no pricing. Visitors can view or download the PDF without navigating to the manufacturer website.
 
-## National story and shared conversion flow
+## Florida-only campaign and browser color
 
-The national entry page uses a family-focused hero and three photographic stories: everyday routines, time with family, and day trips. Every lifestyle image includes a reference-derived Rove 6. Each story card links to `#request`, using the same Medicare question, contact validation, private sale quote, 24-hour price hold, checkout URL and phone option as the Florida variation. National photos are AI-generated illustrative scenes, not patient testimonials.
+Florida is the only Rove 6 landing-page design. All entry URLs, including old `variant=standard`, national links and previously stored experiment assignments, render Florida. No market split, random assignment or campaign local-storage lookup remains. The Florida copy, photos, metadata and `data-theme` are present in the source HTML before JavaScript runs. The form continues to accept requests from any supported state; the campaign theme is not a shipping restriction.
 
-The National palette uses navy `#14365D`, cobalt actions `#164EAA`, pale blue `#F2F6FC`, white, and slate `#4D627A`. Primary actions use larger white text with a measured 7.77:1 contrast ratio against the button fill. Pricing entry links and the contact-submit button read “See Your Exclusive Price”; the exact client-written “See My Options” step and the checkout/call actions retain their task-specific labels. Florida keeps its coastal colors and shares the same exclusive-price wording. Shared inline SVG arrows avoid emoji rendering on iPhone. Mobile buttons were checked at 320px and 390px without horizontal overflow.
+The sticky header and HTML canvas use opaque Atlantic blue `#124C5A`, with the existing white Pure Medical logo, white navigation and coral price actions. A matching `theme-color` meta tag requests a branded browser color where supported. Safari 26 can sample the solid attached header; it has no backdrop blur. Chrome on Android can use the theme-color tag. A normal desktop Chrome tab does not expose the same site-controlled toolbar tint. A manifest/installed web app has not been added solely for this campaign. Actual browser tint depends on version, layout and user settings.
 
-## Florida lifestyle variation
+The product photo stays opaque above its decorative circle (`mix-blend-mode: normal`), so the seafoam backdrop does not tint the white device. Mobile safe-area padding and sticky price/call actions are retained. Header white-on-Atlantic contrast is 9.51:1; coral actions use dark text.
 
-- `?market=florida&variant=standard` forces the national design for Florida control review.
-- `?market=florida&variant=florida` forces the coastal Florida lifestyle design for review.
-- `?market=florida` splits Florida campaign visitors 50/50 and remembers the assigned version in their browser. Campaign names containing `florida` also select this audience. Explicit review overrides do not overwrite the stored assignment.
-- Other traffic uses the national design. No IP-location service is used. Both variants keep the same product facts, required fields, explicit contact permission, offer and checkout process.
-- Each saved request records its page variant and market in Team notes. The request-saved browser event includes these two non-personal labels; no analytics service is installed.
+Each saved request records Florida as both market and variant in Team notes. The request-saved event retains these non-personal labels; no new analytics or advertising pixels have been installed.
 
 ## Connect requests to the private Google Sheet
 
@@ -77,9 +73,13 @@ ROVE6_REQUEST_ENDPOINT='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/ex
 
 The receiver validates on the server, checks callback consent, rejects its honeypot and premature submissions, uses a write lock, deduplicates request IDs, and escapes spreadsheet formula prefixes. Add a managed CAPTCHA or stronger abuse protection before high-volume public advertising if needed. Do not store prescriptions, diagnoses, payment information, or insurance identifiers here.
 
-## Two-step price and order flow
+## Medicare Q&A, price and order flow
 
-Both campaign stories use “See Your Exclusive Price.” Step 1 contains the existing client-written coverage question and required contact details/permission. A confirmed save moves the progress indicator to Step 2, which shows the private offer and secure checkout/call choices. No payment is made by submitting Step 1.
+The Florida campaign uses “See Your Exclusive Price.” Its three visible steps are: (1) a Medicare/home-oxygen question, (2) required contact details and permission, and (3) the private offer with secure checkout/call choices after a confirmed save. No payment is made by submitting the contact request.
+
+The Q&A is adapted from the [Pure Medical reference](https://puremedical-rove6.pplx.app/): Yes, No, or “I’m not sure” shows relevant guidance before the visitor continues. The guidance also appears with the confirmed offer. All answers lead to the same server-supplied price; none determines benefit eligibility. Medicare may cover qualifying portable oxygen through a supplier, so the page links to [Medicare’s oxygen guidance](https://www.medicare.gov/coverage/oxygen-equipment-accessories) and explains that this specific offer is a separate direct purchase. It does not copy the reference’s general coverage denial, public placeholder prices, or demo submission behavior.
+
+Coverage answers stay in page memory and are excluded from the request payload, browser storage, checkout URL and saved-request event. Going back retains the answer so it can be changed; starting over clears it and the contact form. Reloading a saved quote uses neutral coverage wording because the answer is not restored. The contact form cannot submit before the question is answered, and navigation back is disabled while a request is pending.
 
 Only email prefill has been verified on the current hosted HubSpot payment link. The browser adds an encoded `email` parameter after a confirmed save; it carries plus-addressing correctly. Email is kept in memory and a tab-scoped `sessionStorage` entry bound to the saved request UUID, so refreshing the same tab can retain prefill. If that entry is unavailable, checkout still works without prefill. Reset clears the session entry. No name, phone, coverage answer or consent wording is added to the checkout URL. No contact data is sent to analytics.
 
@@ -109,11 +109,11 @@ The intended canonical page is the client's existing `https://puremedco.com/prod
 
 ## Florida logo
 
-The Florida header uses the approved coral mountain mark with sea-glass teal lettering in `assets/logo-florida-coral-teal.png`. The national header retains its original blue logo. The logo was recolored with the built-in image editor from the existing mark.
+The teal Florida header uses the existing white Pure Medical logo for readable contrast. The approved coral-and-teal logo remains available in `assets/logo-florida-coral-teal.png` for light-background campaign materials.
 
 ## Florida imagery and colors
 
-The Florida design uses Atlantic blue `#124C5A`, sea-glass teal `#147980`, warm sand `#FFF5E4`, seafoam `#E5F2EB`, soft coral `#F09A78`, and sunshine gold `#EDBD5C`. Its golf-cart hero, beach-walk scene, and offshore-fishing scene are AI-generated concept composites with a Rove 6 added from the original product-photo reference. They are illustrative scenes, not patient testimonials. The standalone Rove 6 product photo remains the original client product asset. Current composite WebP files are in `assets/florida-*-product.webp`; the national design retains its existing image and colors.
+The Florida design uses Atlantic blue `#124C5A`, sea-glass teal `#147980`, warm sand `#FFF5E4`, seafoam `#E5F2EB`, soft coral `#F09A78`, and sunshine gold `#EDBD5C`. Its golf-cart hero, beach-walk scene, and offshore-fishing scene are AI-generated concept composites with a Rove 6 added from the original product-photo reference. They are illustrative scenes, not patient testimonials. The standalone Rove 6 product photo remains the original client product asset. Current composite WebP files are in `assets/florida-*-product.webp`. Retired national assets are archival files and are not referenced by this landing page.
 
 ## Sources and existing brand assets
 

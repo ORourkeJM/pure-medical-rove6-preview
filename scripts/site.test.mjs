@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const html=await fs.readFile(new URL('../index.html',import.meta.url),'utf8');
 const app=await fs.readFile(new URL('../app.js',import.meta.url),'utf8');
+test('Florida content is crawlable without waiting for campaign JavaScript',()=>{
+  assert.match(html,/<html[^>]+data-theme="florida"/);
+  assert.ok(html.includes('More freedom for<br><em>Florida living.</em>'));
+  assert.ok(html.includes('florida-golf-cart-product.webp'));
+  assert.ok(!html.includes('national-'));
+  assert.ok(html.includes('<meta name="theme-color" content="#124C5A">'));
+});
 test('client review uses the completed offer screen without simulated confirmation copy',()=>{
   for(const text of ['PREVIEW COMPLETE','Your form test is complete','No request was sent or stored','Shared privately','preview-checkout','__PREVIEW_HIDDEN__'])assert.ok(!(html+app).includes(text),text);
   assert.ok(app.includes('await submitRequest(payload,config.requestEndpoint)'));

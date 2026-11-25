@@ -12,6 +12,8 @@ const submissionError=document.getElementById('submission-error');
 const formContent=document.getElementById('form-content');
 const coverageStep=document.getElementById('coverage-step');
 const coverageNext=document.getElementById('coverage-next');
+const coverageGuidance=document.getElementById('coverage-guidance');
+const coverageBack=document.getElementById('back-to-coverage');
 const success=document.getElementById('form-success');
 const offerPanel=document.getElementById('private-offer');
 const checkout=document.getElementById('offer-checkout');
@@ -23,7 +25,7 @@ function remember(id){try{localStorage.setItem(STORAGE_KEY,id);}catch{}}
 function forget(){try{localStorage.removeItem(STORAGE_KEY);}catch{}try{sessionStorage.removeItem(CHECKOUT_EMAIL_KEY);}catch{}checkoutEmail='';}
 function rememberCheckoutEmail(id,email){checkoutEmail=email;try{sessionStorage.setItem(CHECKOUT_EMAIL_KEY,JSON.stringify({requestId:id,email}));}catch{}}
 function restoredCheckoutEmail(id){try{const saved=JSON.parse(sessionStorage.getItem(CHECKOUT_EMAIL_KEY));return saved?.requestId===id&&typeof saved.email==='string'?saved.email:'';}catch{return '';}}
-function progress(step){const current=step===2?'order':'price';for(const name of ['price','order']){const el=document.getElementById('progress-'+name);el.toggleAttribute('data-complete',name==='price'&&current==='order');if(name===current)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');}}
+function progress(step){for(const [index,name] of ['coverage','price','order'].entries()){const el=document.getElementById('progress-'+name);el.toggleAttribute('data-complete',index<step);if(index===step)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');}}
 function focusStep(el){el.focus({preventScroll:true});el.scrollIntoView({behavior:'smooth',block:'start'});}
 function clearErrors(){
   for(const name of ['name','phone','email','consent']){document.getElementById(name+'-error').textContent='';document.getElementById(name).removeAttribute('aria-invalid');}
@@ -48,7 +50,7 @@ function showOffer(result,scroll=true){
   document.getElementById('confirmation-coverage').hidden=false;
   if(result.expired===true){expiredOffer();if(scroll)focusStep(success);return;}
   const offer=validateOffer(result.offer);
-  document.getElementById('success-kicker').textContent=offer?'STEP 2 · YOUR EXCLUSIVE PRICE':'YOUR DETAILS ARE SAVED';
+  document.getElementById('success-kicker').textContent=offer?'STEP 3 OF 3 · YOUR EXCLUSIVE PRICE':'YOUR DETAILS ARE SAVED';
   document.getElementById('success-heading').textContent=offer?'Your Rove 6 offer is ready.':'Thank you for reaching out.';
   document.getElementById('success-message').textContent=offer?'Your exclusive price is ready. Continue to secure checkout, or call us for personal help.':'Our team will be in touch to discuss your Rove 6. You can also call us below.';
   if(offer){
@@ -72,15 +74,19 @@ function showOffer(result,scroll=true){
 }
 for(const input of document.querySelectorAll('input[name="medicare-coverage"]'))input.addEventListener('change',()=>{
   coverageAnswer=input.value;coverageNext.disabled=false;
+  const info=coverageMessage(coverageAnswer);
+  document.getElementById('coverage-guidance-title').textContent=info.heading;
+  document.getElementById('coverage-guidance-copy').textContent=info.body;
+  coverageGuidance.hidden=false;
 });
 coverageNext.addEventListener('click',()=>{if(!coverageAnswer)return;coverageStep.hidden=true;formContent.hidden=false;progress(1);document.getElementById('name').focus();});
-document.getElementById('back-to-coverage').addEventListener('click',()=>{formContent.hidden=true;coverageStep.hidden=false;progress(0);coverageNext.focus();});
+coverageBack.addEventListener('click',()=>{if(busy)return;formContent.hidden=true;coverageStep.hidden=false;progress(0);focusStep(coverageStep);});
 form.addEventListener('submit',async event=>{
-  event.preventDefault();if(busy)return;clearErrors();
+  event.preventDefault();if(busy||!coverageAnswer||formContent.hidden)return;clearErrors();
   const values={...Object.fromEntries(new FormData(form)),consent:document.getElementById('consent').checked};
   const errors=validateRequest(values);
   if(Object.keys(errors).length){for(const[name,message]of Object.entries(errors)){document.getElementById(name+'-error').textContent=message;document.getElementById(name).setAttribute('aria-invalid','true');}document.getElementById(Object.keys(errors)[0]).focus();return;}
-  busy=true;submit.disabled=true;submitLabel.textContent='Getting your offer…';
+  busy=true;submit.disabled=true;coverageBack.disabled=true;submitLabel.textContent='Getting your offer…';
   try{
     const payload=makePayload(values,requestId,startedAt,campaign);
     const result=await submitRequest(payload,config.requestEndpoint);
@@ -88,11 +94,14 @@ form.addEventListener('submit',async event=>{
     remember(requestId);rememberCheckoutEmail(requestId,payload.email);showOffer(result);form.reset();
     window.dispatchEvent(new CustomEvent('rove6:request-saved',{detail:{event:'rove6_request_saved',market:campaign.market,variant:campaign.variant}}));
   }catch(error){submissionError.textContent=error.message||'Unable to send your request. Please try again or call (888) 747-7590.';submissionError.hidden=false;submissionError.focus();}
-  finally{busy=false;submit.disabled=false;submitLabel.textContent=submitIdleLabel;}
+  finally{busy=false;submit.disabled=false;coverageBack.disabled=false;submitLabel.textContent=submitIdleLabel;}
 });
 document.getElementById('reset-form').addEventListener('click',()=>{
-  forget();clearOffer();success.hidden=true;formContent.hidden=true;coverageStep.hidden=false;
+  forget();clearOffer();form.reset();success.hidden=true;formContent.hidden=true;coverageStep.hidden=false;
   document.getElementById('confirmation-coverage').hidden=true;
+  coverageGuidance.hidden=true;
+  document.getElementById('coverage-guidance-title').textContent='';
+  document.getElementById('coverage-guidance-copy').textContent='';
   for(const input of document.querySelectorAll('input[name="medicare-coverage"]'))input.checked=false;
   coverageAnswer='';coverageNext.disabled=true;startedAt=Date.now();requestId=crypto.randomUUID();clearErrors();progress(0);focusStep(coverageStep);
 });
